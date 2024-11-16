@@ -8,10 +8,10 @@ import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.enums.SkillType;
 @Setter
 @Entity
 @Table(name = "skill")
-@RequiredArgsConstructor
 @NoArgsConstructor
 @AllArgsConstructor
 public class Skill {
+
     @Id
     @Column(name = "skill_id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,7 +27,7 @@ public class Skill {
     @Column(name = "type")
     private SkillType type;
 
-    public Skill(String skillDescription,  String skillName,  SkillType type) {
+    public Skill(String skillDescription, @NonNull String skillName, @NonNull SkillType type) {
         this.skillDescription = skillDescription;
         this.skillName = skillName;
         this.type = type;

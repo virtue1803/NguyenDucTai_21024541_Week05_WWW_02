@@ -7,5 +7,5 @@ import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Skill;
 import java.util.Optional;
 
 public interface SkillRepository extends JpaRepository<Skill, Long> {
-    Optional<Candidate> findByEmailAndPassword(String email, String password);
+
 }

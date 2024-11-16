@@ -8,9 +8,9 @@ import lombok.*;
 @Entity
 @Table(name = "job")
 @NoArgsConstructor
-@RequiredArgsConstructor
 @AllArgsConstructor
 public class Job {
+
     @Id
     @Column(name = "job_id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,5 +25,4 @@ public class Job {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "company")
     private Company company;
-
 }

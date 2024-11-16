@@ -9,10 +9,10 @@ import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.ids.CandidateSkillId;
 @Setter
 @Entity
 @Table(name = "candidate_skill")
-@RequiredArgsConstructor
 @NoArgsConstructor
 @AllArgsConstructor
 public class CandidateSkill {
+
     @EmbeddedId
     private CandidateSkillId id;
 

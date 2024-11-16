@@ -8,9 +8,9 @@ import lombok.*;
 @Entity
 @Table(name = "address")
 @NoArgsConstructor
-@RequiredArgsConstructor
 @AllArgsConstructor
 public class Address {
+
     @Id
     @Column(name = "id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,5 +30,4 @@ public class Address {
 
     @Column(name = "zipcode", length = 7)
     private String zipcode;
-
 }

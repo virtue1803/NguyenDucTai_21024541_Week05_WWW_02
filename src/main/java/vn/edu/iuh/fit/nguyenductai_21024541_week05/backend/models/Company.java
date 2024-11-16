@@ -8,9 +8,9 @@ import lombok.*;
 @Entity
 @Table(name = "company")
 @NoArgsConstructor
-@RequiredArgsConstructor
 @AllArgsConstructor
 public class Company {
+
     @Id
     @Column(name = "comp_id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,5 +34,4 @@ public class Company {
     @OneToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "address", nullable = false)
     private Address address;
-
 }
