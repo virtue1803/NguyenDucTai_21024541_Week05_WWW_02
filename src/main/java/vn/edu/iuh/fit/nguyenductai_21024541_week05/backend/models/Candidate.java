@@ -2,7 +2,10 @@ package vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.enums.CandidateRole;
 
 import java.time.LocalDate;
 
@@ -10,16 +13,17 @@ import java.time.LocalDate;
 @Setter
 @Entity
 @Table(name = "candidate")
+@NoArgsConstructor
+@RequiredArgsConstructor
 public class Candidate {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
+    @Column(name = "id", nullable = false) @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "dob", nullable = false)
     private LocalDate dob;
 
-    @Column(name = "email", nullable = false)
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
     @Column(name = "full_name", nullable = false)
@@ -28,18 +32,23 @@ public class Candidate {
     @Column(name = "phone", nullable = false, length = 15)
     private String phone;
 
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @Column(nullable = false, length = 100)
+    private String password;
+
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "address", nullable = false)
     private Address address;
 
-    public Candidate() {
-    }
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private CandidateRole role;
 
-    public Candidate(LocalDate dob, String email, String fullName, String phone, Address address) {
-        this.dob = dob;
-        this.email = email;
-        this.fullName = fullName;
-        this.phone = phone;
-        this.address = address;
+    @Column(nullable = false)
+    private boolean status;
+
+    @PrePersist
+    public void prePersist() {
+        status = true;
+        role = CandidateRole.USER;
     }
 }

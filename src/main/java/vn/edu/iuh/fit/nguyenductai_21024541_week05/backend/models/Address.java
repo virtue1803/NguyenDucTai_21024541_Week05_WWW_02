@@ -2,16 +2,20 @@ package vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "address")
+@NoArgsConstructor
+@RequiredArgsConstructor
 public class Address {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "street", length = 150)
@@ -29,16 +33,4 @@ public class Address {
     @Column(name = "zipcode", length = 7)
     private String zipcode;
 
-    public Address() {
-    }
-
-
-
-    public Address(String street, String city, Short country, String number, String zipcode) {
-        this.street = street;
-        this.city = city;
-        this.country = country;
-        this.number = number;
-        this.zipcode = zipcode;
-    }
 }

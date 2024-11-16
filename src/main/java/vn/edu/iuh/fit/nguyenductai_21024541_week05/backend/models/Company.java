@@ -2,12 +2,16 @@ package vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "company")
+@NoArgsConstructor
+@RequiredArgsConstructor
 public class Company {
     @Id
     @Column(name = "comp_id", nullable = false)
@@ -29,19 +33,8 @@ public class Company {
     @Column(name = "web_url")
     private String webUrl;
 
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @OneToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "address", nullable = false)
     private Address address;
 
-    public Company() {
-    }
-
-    public Company(String about, String email, String compName, String phone, String webUrl, Address address) {
-        this.about = about;
-        this.email = email;
-        this.compName = compName;
-        this.phone = phone;
-        this.webUrl = webUrl;
-        this.address = address;
-    }
 }
