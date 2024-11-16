@@ -27,4 +27,13 @@ public class Experience {
     private LocalDate toDate;
     @ManyToOne @JoinColumn(name = "can_id", nullable = false)
     private Candidate candidate;
+
+    public Experience(String companyName, String workDescription, String role, LocalDate fromDate, LocalDate toDate, Candidate candidate) {
+        this.companyName = companyName;
+        this.workDescription = workDescription;
+        this.role = role;
+        this.fromDate = fromDate;
+        this.toDate = toDate;
+        this.candidate = candidate;
+    }
 }
