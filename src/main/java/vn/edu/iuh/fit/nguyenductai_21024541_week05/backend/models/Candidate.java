@@ -1,10 +1,7 @@
 package vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.enums.CandidateRole;
 
 import java.time.LocalDate;
@@ -15,6 +12,7 @@ import java.time.LocalDate;
 @Table(name = "candidate")
 @NoArgsConstructor
 @RequiredArgsConstructor
+@AllArgsConstructor
 public class Candidate {
     @Id
     @Column(name = "id", nullable = false) @GeneratedValue(strategy = GenerationType.IDENTITY)

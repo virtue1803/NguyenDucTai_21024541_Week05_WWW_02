@@ -1,10 +1,7 @@
 package vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.enums.SkillLevel;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.ids.JobSkillId;
 
@@ -14,6 +11,7 @@ import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.ids.JobSkillId;
 @Table(name = "job_skill")
 @NoArgsConstructor
 @RequiredArgsConstructor
+@AllArgsConstructor
 public class JobSkill {
     @EmbeddedId
     private JobSkillId id;

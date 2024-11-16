@@ -1,10 +1,7 @@
 package vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
@@ -12,6 +9,7 @@ import lombok.Setter;
 @Table(name = "company")
 @NoArgsConstructor
 @RequiredArgsConstructor
+@AllArgsConstructor
 public class Company {
     @Id
     @Column(name = "comp_id", nullable = false)
