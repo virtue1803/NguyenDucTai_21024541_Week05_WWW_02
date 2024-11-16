@@ -31,7 +31,7 @@ public class AddressResources implements IResources<Address,Long> {
             log.info("Insert address successfully");
             return ResponseEntity.ok(new Response(HttpStatus.OK.value(), "Insert address successfully", results));
         } catch (Exception e) {
-            log.error("Insert address failed" + e.getMessage());
+            log.error("Insert address failed: " + e.getMessage());
             return ResponseEntity.ok(new Response(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Insert address failed!", null));
         }
     }
@@ -73,8 +73,8 @@ public class AddressResources implements IResources<Address,Long> {
                     null
             ));
         } catch (Exception e) {
-            log.error("Get address by id failed");
-            log.error("Error: ", e);
+            log.error("Get address by id failed: "+ e.getMessage());
+
             return ResponseEntity.ok(new Response(
                     HttpStatus.OK.value(),
                     "Get address by id failed",
