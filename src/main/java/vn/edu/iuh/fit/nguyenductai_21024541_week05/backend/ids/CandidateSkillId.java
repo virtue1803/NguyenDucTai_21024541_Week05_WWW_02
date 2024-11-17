@@ -32,4 +32,18 @@ public class CandidateSkillId implements Serializable {
     @JoinColumn(name = "skill_id", nullable = false)
     private Skill skill;
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CandidateSkillId)) return false;
+        CandidateSkillId that = (CandidateSkillId) o;
+        return Objects.equals(candidate, that.candidate) &&
+                Objects.equals(skill, that.skill);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(candidate != null ? candidate.hashCode() : 0,
+                skill != null ? skill.hashCode() : 0);
+    }
 }

@@ -42,7 +42,7 @@ public class Candidate {
 
     @NonNull
     @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "address", nullable = false)
+    @JoinColumn(name = "address", nullable = false, unique = true)
     private Address address;
 
     @NonNull

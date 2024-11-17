@@ -3,7 +3,9 @@ package vn.edu.iuh.fit.nguyenductai_21024541_week05;
 import net.datafaker.Faker;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
-import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.enums.*;
+import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.enums.CandidateRole;
+import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.enums.SkillLevel;
+import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.enums.SkillType;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.ids.CandidateSkillId;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.ids.JobSkillId;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.*;
@@ -46,6 +48,16 @@ public class DataGenerator implements CommandLineRunner {
         Faker faker = new Faker();
         Random random = new Random();
 
+        // Clear existing data
+        experienceRepository.deleteAll();
+        candidateSkillRepository.deleteAll();
+        jobSkillRepository.deleteAll();
+        jobRepository.deleteAll();
+        candidateRepository.deleteAll();
+        companyRepository.deleteAll();
+        addressRepository.deleteAll();
+        System.out.println("Old data cleared!");
+
         // 1. Generate Addresses
         List<Address> addresses = new ArrayList<>();
         for (int i = 0; i < 100; i++) {
@@ -53,32 +65,29 @@ public class DataGenerator implements CommandLineRunner {
                     null,
                     faker.address().streetName(),
                     faker.address().city(),
-                    (short) random.nextInt(200), // Generate a random country code (0-199)
+                    (short) random.nextInt(200),
                     faker.address().streetAddressNumber(),
                     faker.address().zipCode()
             ));
         }
         addressRepository.saveAll(addresses);
+        System.out.println("Addresses saved!");
 
         // 2. Generate Companies
-        Set<String> uniqueEmails = new HashSet<>();
-        while (uniqueEmails.size() < 50) {
-            uniqueEmails.add(faker.internet().emailAddress());
-        }
-
         List<Company> companies = new ArrayList<>();
-        for (String email : uniqueEmails) {
+        for (int i = 0; i < addresses.size(); i++) {
             companies.add(new Company(
                     null,
                     faker.lorem().paragraph(),
-                    email,
-                    faker.company().name() + "_" + random.nextInt(1000),
+                    faker.internet().emailAddress(),
+                    faker.company().name(),
                     faker.phoneNumber().phoneNumber(),
                     faker.internet().url(),
-                    addresses.get(random.nextInt(addresses.size()))
+                    addresses.get(i) // Use each address once
             ));
         }
         companyRepository.saveAll(companies);
+        System.out.println("Companies saved!");
 
         // 3. Generate Skills
         List<Skill> skills = new ArrayList<>();
@@ -91,23 +100,41 @@ public class DataGenerator implements CommandLineRunner {
             ));
         }
         skillRepository.saveAll(skills);
+        System.out.println("Skills saved!");
 
         // 4. Generate Candidates
+        Set<String> uniqueEmails = new HashSet<>();
+        Set<Long> usedAddressIds = new HashSet<>();
+
+        while (uniqueEmails.size() < 200) {
+            uniqueEmails.add(faker.internet().emailAddress());
+        }
+
         List<Candidate> candidates = new ArrayList<>();
-        for (int i = 0; i < 200; i++) {
+        Iterator<String> emailIterator = uniqueEmails.iterator();
+
+        for (int i = 0; i < 100; i++) {
+            Address address;
+            do {
+                address = addresses.get(random.nextInt(addresses.size()));
+            } while (usedAddressIds.contains(address.getId())); // Use address id to ensure uniqueness
+
+            usedAddressIds.add(address.getId());
+
             candidates.add(new Candidate(
                     null,
                     LocalDate.now().minusYears(random.nextInt(40) + 20),
-                    faker.internet().emailAddress(),
+                    emailIterator.next(),
                     faker.name().fullName(),
                     faker.phoneNumber().cellPhone(),
                     faker.internet().password(),
-                    addresses.get(random.nextInt(addresses.size())),
+                    address,
                     CandidateRole.USER,
                     true
             ));
         }
         candidateRepository.saveAll(candidates);
+        System.out.println("Candidates saved!");
 
         // 5. Generate Candidate Skills
         List<CandidateSkill> candidateSkills = new ArrayList<>();
@@ -121,6 +148,7 @@ public class DataGenerator implements CommandLineRunner {
             }
         }
         candidateSkillRepository.saveAll(candidateSkills);
+        System.out.println("Candidate skills saved!");
 
         // 6. Generate Jobs
         List<Job> jobs = new ArrayList<>();
@@ -133,6 +161,7 @@ public class DataGenerator implements CommandLineRunner {
             ));
         }
         jobRepository.saveAll(jobs);
+        System.out.println("Jobs saved!");
 
         // 7. Generate Job Skills
         List<JobSkill> jobSkills = new ArrayList<>();
@@ -146,6 +175,7 @@ public class DataGenerator implements CommandLineRunner {
             }
         }
         jobSkillRepository.saveAll(jobSkills);
+        System.out.println("Job skills saved!");
 
         // 8. Generate Experiences
         List<Experience> experiences = new ArrayList<>();
@@ -164,6 +194,7 @@ public class DataGenerator implements CommandLineRunner {
             }
         }
         experienceRepository.saveAll(experiences);
+        System.out.println("Experiences saved!");
 
         System.out.println("Data generation completed successfully!");
     }

@@ -32,7 +32,7 @@ public class Company {
     private String webUrl;
 
     @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "address", nullable = false)
+    @JoinColumn(name = "address", nullable = false,unique = true)
     @NonNull
     private Address address;
 }
