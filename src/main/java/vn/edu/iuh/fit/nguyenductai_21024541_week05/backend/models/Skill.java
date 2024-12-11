@@ -23,7 +23,7 @@ public class Skill {
     @Column(name = "skill_name")
     private String skillName;
 
-    @Enumerated(EnumType.ORDINAL)
+    @Enumerated(EnumType.STRING)
     @Column(name = "type")
     private SkillType type;
 
