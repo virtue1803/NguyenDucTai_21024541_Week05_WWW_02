@@ -2,81 +2,80 @@ package vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.services.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.enums.CandidateRole;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.exceptions.EntityIdNotFoundException;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Candidate;
-import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.CandidateSkill;
-import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Experience;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.repositories.CandidateRepository;
-import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.repositories.CandidateSkillRepository;
-import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.repositories.ExperienceRepository;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.services.IServices;
 
-import java.awt.print.Pageable;
-import java.util.ArrayList;
+import java.time.LocalDate;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
 @Service
-public class CandidateService implements IServices<Candidate,Long> {
+public class CandidateService implements IServices<Candidate, Long> {
 
     @Autowired
-    private CandidateRepository cr;
-    @Autowired
-    private CandidateSkillRepository csr;
-    @Autowired
-    private ExperienceRepository er;
+    private CandidateRepository candidateRepository;
 
     @Override
     public Candidate add(Candidate candidate) {
-        return cr.save(candidate);
+        return candidateRepository.save(candidate);
     }
 
     @Override
     public List<Candidate> addMany(List<Candidate> list) {
-        List<Candidate> results = new ArrayList<>();
-        Iterator<Candidate> output = cr.saveAll(list).iterator();
-        output.forEachRemaining(results::add);
-        return results;
+        return candidateRepository.saveAll(list);
     }
 
     @Override
-    public Candidate update(Candidate candidate) {
-        return cr.save(candidate);
+    public Candidate update(Candidate candidate) throws EntityIdNotFoundException {
+        if (!candidateRepository.existsById(candidate.getId())) {
+            throw new EntityIdNotFoundException("Candidate not found with id: " + candidate.getId());
+        }
+        return candidateRepository.save(candidate);
     }
 
     @Override
-    public void delete(Long aLong) throws EntityIdNotFoundException {
-        cr.delete(cr.findById(aLong).orElseThrow(() -> new EntityIdNotFoundException(aLong + "")));
+    public void delete(Long id) throws EntityIdNotFoundException {
+        if (!candidateRepository.existsById(id)) {
+            throw new EntityIdNotFoundException("Candidate not found with id: " + id);
+        }
+        candidateRepository.deleteById(id);
     }
 
     @Override
-    public Optional<Candidate> getById(Long aLong) throws EntityIdNotFoundException {
-        return Optional.of(cr.findById(aLong).orElseThrow(() -> new EntityIdNotFoundException(aLong + "")));
+    public Optional<Candidate> getById(Long id) throws EntityIdNotFoundException {
+        Optional<Candidate> candidate = candidateRepository.findById(id);
+        if (!candidate.isPresent()) {
+            throw new EntityIdNotFoundException("Candidate not found with id: " + id);
+        }
+        return candidate;
     }
 
     @Override
     public Iterator<Candidate> getAll() {
-        return cr.findAll().iterator();
+        return candidateRepository.findAll().iterator();
     }
 
-    public Iterator<Candidate> getAll(Pageable pageable) {
-        return cr.findAll((org.springframework.data.domain.Pageable) pageable).iterator();
+    // Tìm kiếm ứng viên theo email và password
+    public Optional<Candidate> findByEmailAndPassword(String email, String password) {
+        return candidateRepository.findByEmailAndPassword(email, password);
     }
 
-    public Candidate checkLoginAccount(String email, String password) {
-        return cr.findByEmailAndPassword(email, password).orElse(null);
+    // Tìm ứng viên theo vai trò
+    public List<Candidate> findByRole(CandidateRole role) {
+        return candidateRepository.findByRole(role);
     }
 
-    public List<CandidateSkill> getCandidateSkill(Long canId) {
-        List<CandidateSkill> results = new ArrayList<>();
-        csr.findById_Candidate_Id(canId).iterator().forEachRemaining(results::add);
-        return results;
+    // Tìm ứng viên theo tên
+    public List<Candidate> findByNameContainingIgnoreCase(String name) {
+        return candidateRepository.findByNameContainingIgnoreCase(name);
     }
 
-    public List<Experience> getCandidateExperience(Long canId) {
-        List<Experience> results = new ArrayList<>();
-        er.findByCandidate_Id(canId).iterator().forEachRemaining(results::add);
-        return results;
+    // Tìm ứng viên theo ngày sinh trong khoảng thời gian
+    public List<Candidate> findByDobBetween(LocalDate startDate, LocalDate endDate) {
+        return candidateRepository.findByDobBetween(startDate, endDate);
     }
 }

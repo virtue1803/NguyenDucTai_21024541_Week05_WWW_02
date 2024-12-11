@@ -7,47 +7,71 @@ import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Experience;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.repositories.ExperienceRepository;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.services.IServices;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
 @Service
-public class ExperienceService implements IServices<Experience,Long> {
+public class ExperienceService implements IServices<Experience, Long> {
 
     @Autowired
-    private ExperienceRepository er;
+    private ExperienceRepository experienceRepository;
 
     @Override
     public Experience add(Experience experience) {
-        return er.save(experience);
+        return experienceRepository.save(experience);
     }
 
     @Override
-    public List<Experience> addMany(List<Experience> list) {
-        List<Experience> results = new ArrayList<>();
-        Iterator<Experience> output = er.saveAll(list).iterator();
-        output.forEachRemaining(results::add);
-        return results;
+    public List<Experience> addMany(List<Experience> experiences) {
+        return experienceRepository.saveAll(experiences);
     }
 
     @Override
-    public Experience update(Experience experience) {
-        return er.save(experience);
+    public Experience update(Experience experience) throws EntityIdNotFoundException {
+        if (!experienceRepository.existsById(experience.getExpId())) {
+            throw new EntityIdNotFoundException("Experience not found with id: " + experience.getExpId());
+        }
+        return experienceRepository.save(experience);
     }
 
     @Override
-    public void delete(Long aLong) throws EntityIdNotFoundException {
-        er.delete(er.findById(aLong).orElseThrow(() -> new EntityIdNotFoundException(String.valueOf(aLong))));
+    public void delete(Long id) throws EntityIdNotFoundException {
+        if (!experienceRepository.existsById(id)) {
+            throw new EntityIdNotFoundException("Experience not found with id: " + id);
+        }
+        experienceRepository.deleteById(id);
     }
 
     @Override
-    public Optional<Experience> getById(Long aLong) throws EntityIdNotFoundException {
-        return Optional.of(er.findById(aLong).orElseThrow(() -> new EntityIdNotFoundException(String.valueOf(aLong))));
+    public Optional<Experience> getById(Long id) throws EntityIdNotFoundException {
+        Optional<Experience> experience = experienceRepository.findById(id);
+        if (experience.isEmpty()) {
+            throw new EntityIdNotFoundException("Experience not found with id: " + id);
+        }
+        return experience;
     }
 
     @Override
     public Iterator<Experience> getAll() {
-        return er.findAll().iterator();
+        List<Experience> experiences = experienceRepository.findAll();
+        return experiences.iterator();
+    }
+
+    // Các phương thức tìm kiếm thêm dựa trên các tiêu chí
+    public List<Experience> findByCandidateId(Long candidateId) {
+        return experienceRepository.findByCandidate_Id(candidateId);
+    }
+
+    public List<Experience> findByCompanyName(String companyName) {
+        return experienceRepository.findByCompanyNameContainingIgnoreCase(companyName);
+    }
+
+    public List<Experience> findByRole(String role) {
+        return experienceRepository.findByRoleContainingIgnoreCase(role);
+    }
+
+    public List<Experience> findByCompanyNameAndRole(String companyName, String role) {
+        return experienceRepository.findByCompanyNameContainingIgnoreCaseAndRoleContainingIgnoreCase(companyName, role);
     }
 }

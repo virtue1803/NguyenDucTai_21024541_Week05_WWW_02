@@ -7,47 +7,66 @@ import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Address;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.repositories.AddressRepository;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.services.IServices;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+
 @Service
-public class AddressService implements IServices<Address,Long> {
+public class AddressService implements IServices<Address, Long> {
 
     @Autowired
-    private AddressRepository ar;
+    private AddressRepository addressRepository;
+
     @Override
     public Address add(Address address) {
-        return ar.save(address);
-    }
-
-
-
-    @Override
-    public List<Address> addMany(List<Address> list) {
-        List<Address> results = new ArrayList<>();
-        Iterator<Address> output = ar.saveAll(list).iterator();
-        output.forEachRemaining(results::add);
-        return results;
+        return addressRepository.save(address);
     }
 
     @Override
-    public Address update(Address address) {
-        return ar.save(address);
+    public List<Address> addMany(List<Address> addresses) {
+        return addressRepository.saveAll(addresses);
     }
 
     @Override
-    public void delete(Long aLong) throws EntityIdNotFoundException {
-        ar.delete(getById(aLong).orElseThrow(() -> new EntityIdNotFoundException(aLong + "")));
+    public Address update(Address address) throws EntityIdNotFoundException {
+        if (!addressRepository.existsById(address.getId())) {
+            throw new EntityIdNotFoundException("Address not found with id: " + address.getId());
+        }
+        return addressRepository.save(address);
     }
 
     @Override
-    public Optional<Address> getById(Long aLong) throws EntityIdNotFoundException {
-        return Optional.of(ar.findById(aLong).orElseThrow(() -> new EntityIdNotFoundException(aLong + "")));
+    public void delete(Long id) throws EntityIdNotFoundException {
+        if (!addressRepository.existsById(id)) {
+            throw new EntityIdNotFoundException("Address not found with id: " + id);
+        }
+        addressRepository.deleteById(id);
+    }
+
+    @Override
+    public Optional<Address> getById(Long id) throws EntityIdNotFoundException {
+        Optional<Address> address = addressRepository.findById(id);
+        if (!address.isPresent()) {
+            throw new EntityIdNotFoundException("Address not found with id: " + id);
+        }
+        return address;
     }
 
     @Override
     public Iterator<Address> getAll() {
-        return ar.findAll().iterator();
+        return addressRepository.findAll().iterator();
+    }
+
+    // Các phương thức tìm kiếm theo các tiêu chí khác
+    public List<Address> findByCity(String city) {
+        return addressRepository.findByCity(city);
+    }
+
+    public List<Address> findByCountry(String country) {
+        return addressRepository.findByCountry(country);
+    }
+
+    public List<Address> findByStreet(String street) {
+        return addressRepository.findByStreet(street);
     }
 }
