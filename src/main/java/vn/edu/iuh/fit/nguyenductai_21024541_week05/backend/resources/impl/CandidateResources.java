@@ -2,160 +2,171 @@ package vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.resources.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.dto.CandidateAccountDTO;
-import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.exceptions.EntityIdNotFoundException;
-import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Candidate;
+import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.enums.CandidateRole;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Response;
-import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.resources.IResources;
+import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Candidate;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.services.impl.CandidateService;
+import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.resources.IResources;
 
-import java.awt.print.Pageable;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-@RestController
-@RequestMapping("api/candidate")
 @Slf4j
-public class CandidateResources implements IResources<Candidate,Long> {
+@RestController
+@RequestMapping("/api/candidates")
+public class CandidateResources implements IResources<Candidate, Long> {
 
     @Autowired
-    private CandidateService cs;
+    private CandidateService candidateService;
+
+    // Thêm ứng viên mới
     @Override
     @PostMapping
     public ResponseEntity<Response> insert(@RequestBody Candidate candidate) {
-        log.info(" inserting candidate");
         try {
-            Candidate results = cs.add(candidate);
-            log.info("Insert candidate successfully");
-            return ResponseEntity.ok(new Response(HttpStatus.OK.value(), "Insert candidate successfully", results));
+            Candidate savedCandidate = candidateService.add(candidate);
+            Response response = new Response(HttpStatus.CREATED.value(), "Candidate created successfully", savedCandidate);
+            return new ResponseEntity<>(response, HttpStatus.CREATED);
         } catch (Exception e) {
-            log.error("Insert candidate failed: " + e.getMessage());
-            return ResponseEntity.ok(new Response(HttpStatus.OK.value(), "Insert candidate failed!", null));
-        } catch (Throwable e) {
-            log.error("Insert candidate failed: " + e.getMessage());
-            return ResponseEntity.ok(new Response(HttpStatus.OK.value(), "Insert candidate failed!", null));
+            Response response = new Response(HttpStatus.BAD_REQUEST.value(), "Failed to create candidate", null);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
-
     }
 
+    // Thêm nhiều ứng viên
     @Override
-    public ResponseEntity<Response> insertAll(List<Candidate> list) {
-        return null;
+    @PostMapping("/bulk")
+    public ResponseEntity<Response> insertAll(@RequestBody List<Candidate> candidates) {
+        try {
+            List<Candidate> savedCandidates = candidateService.addMany(candidates);
+            Response response = new Response(HttpStatus.CREATED.value(), "Candidates created successfully", savedCandidates);
+            return new ResponseEntity<>(response, HttpStatus.CREATED);
+        } catch (Exception e) {
+            Response response = new Response(HttpStatus.BAD_REQUEST.value(), "Failed to create candidates", null);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
     }
 
+    // Cập nhật ứng viên
     @Override
     @PutMapping("/{id}")
-    public ResponseEntity<Response> update(@PathVariable("id") Long aLong,@RequestBody Candidate candidate) {
-        return null;
+    public ResponseEntity<Response> update(@PathVariable Long id, @RequestBody Candidate candidate) {
+        try {
+            candidate.setId(id);
+            Candidate updatedCandidate = candidateService.update(candidate);
+            Response response = new Response(HttpStatus.OK.value(), "Candidate updated successfully", updatedCandidate);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            Response response = new Response(HttpStatus.NOT_FOUND.value(), "Candidate not found", null);
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
     }
 
+    // Xóa ứng viên
     @Override
     @DeleteMapping("/{id}")
-    public ResponseEntity<Response> delete(@PathVariable("id") Long aLong) {
-        return null;
+    public ResponseEntity<Response> delete(@PathVariable Long id) {
+        try {
+            candidateService.delete(id);
+            Response response = new Response(HttpStatus.NO_CONTENT.value(), "Candidate deleted successfully", null);
+            return new ResponseEntity<>(response, HttpStatus.NO_CONTENT);
+        } catch (Exception e) {
+            Response response = new Response(HttpStatus.NOT_FOUND.value(), "Candidate not found", null);
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
     }
 
+    // Lấy thông tin ứng viên theo ID
     @Override
     @GetMapping("/{id}")
-    public ResponseEntity<Response> getById(@PathVariable("id") Long aLong) {
+    public ResponseEntity<Response> getById(@PathVariable Long id) {
         try {
-            Optional<Candidate> opCan = cs.getById(aLong);
-            return ResponseEntity.ok(new Response(
-                    HttpStatus.OK.value(),
-                    "Get candidate successfully",
-                    opCan.get()
-            ));
-        } catch (EntityIdNotFoundException e) {
-            log.warn("Get candidate failed for the candidate id not found!");
-            return ResponseEntity.ok(new Response(
-                    HttpStatus.NO_CONTENT.value(),
-                    "The candidate id = " + aLong + " was not found!",
-                    null
-            ));
-        } catch (Exception e) {
-            log.error("Get candidate failed: " + e.getMessage());
-            return ResponseEntity.ok(new Response(
-                    HttpStatus.OK.value(),
-                    "Get candidate failed!",
-                    null
-            ));
-        }
-    }
-
-    @GetMapping
-    @Override
-    public ResponseEntity<Response> getAll() {
-        return ResponseEntity.ok(new Response(
-                HttpStatus.OK.value(),
-                "Get all candidates successfully",
-                cs.getAll()
-        ));
-    }
-
-
-    @PostMapping("login")
-    public ResponseEntity<Response> checkLoginAccount(@RequestBody CandidateAccountDTO caDto) {
-        log.info("Calling check login account");
-        String getEmail = caDto.getEmail();
-        String getPassword = caDto.getPassword();
-
-        try {
-            Candidate output = cs.checkLoginAccount(getEmail, getPassword);
-            if (output != null) {
-                log.info("Check login account successfully");
-                return ResponseEntity.ok(new Response(
-                        HttpStatus.OK.value(),
-                        "Check login account successfully",
-                        output
-                ));
+            Optional<Candidate> candidate = candidateService.getById(id);
+            if (candidate.isPresent()) {
+                Response response = new Response(HttpStatus.OK.value(), "Candidate found", candidate.get());
+                return new ResponseEntity<>(response, HttpStatus.OK);
             } else {
-                log.warn("Check login account failed for the email or password is incorrect!");
-                return ResponseEntity.ok(new Response(
-                        HttpStatus.NO_CONTENT.value(),
-                        "The email or password is incorrect!",
-                        null
-                ));
+                Response response = new Response(HttpStatus.NOT_FOUND.value(), "Candidate not found", null);
+                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
             }
         } catch (Exception e) {
-            log.error("Check login account failed: " + e.getMessage());
-
-            return ResponseEntity.ok(new Response(
-                    HttpStatus.OK.value(),
-                    "Check login account failed!",
-                    null
-            ));
+            Response response = new Response(HttpStatus.NOT_FOUND.value(), "Error fetching candidate", null);
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         }
     }
 
-    @GetMapping("/page/{page}")
-    public ResponseEntity<Response> getAll(@PathVariable("page") String pageNumber) {
-        Pageable page = (Pageable) PageRequest.of(Integer.parseInt(pageNumber), 10);
-        return ResponseEntity.ok(new Response(
-                HttpStatus.OK.value(),
-                "Get all candidates successfully",
-                cs.getAll(page)
-        ));
+    // Lấy tất cả ứng viên
+    @Override
+    @GetMapping
+    public ResponseEntity<Response> getAll() {
+        try {
+            List<Candidate> candidates = (List<Candidate>) candidateService.getAll();
+            Response response = new Response(HttpStatus.OK.value(), "All candidates retrieved successfully", candidates);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            Response response = new Response(HttpStatus.BAD_REQUEST.value(), "Failed to retrieve candidates", null);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
     }
 
-    @GetMapping("/{id}/skills")
-    public ResponseEntity<Response> getCandidateSkills(@PathVariable("id") Long canId) {
-        return ResponseEntity.ok(new Response(
-                HttpStatus.OK.value(),
-                "Get all candidate skills successfully",
-                cs.getCandidateSkill(canId)
-        ));
+    // Tìm kiếm ứng viên theo email và password
+    @PostMapping("/login")
+    public ResponseEntity<Response> findByEmailAndPassword(@RequestParam String email, @RequestParam String password) {
+        try {
+            Optional<Candidate> candidate = candidateService.findByEmailAndPassword(email, password);
+            if (candidate.isPresent()) {
+                Response response = new Response(HttpStatus.OK.value(), "Candidate found", candidate.get());
+                return new ResponseEntity<>(response, HttpStatus.OK);
+            } else {
+                Response response = new Response(HttpStatus.NOT_FOUND.value(), "Invalid email or password", null);
+                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            Response response = new Response(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error during login", null);
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
-    @GetMapping("/{id}/experiences")
-    public ResponseEntity<Response> getCandidateExperience(@PathVariable("id") Long canId) {
-        return ResponseEntity.ok(new Response(
-                HttpStatus.OK.value(),
-                "Get all candidate experiences successfully",
-                cs.getCandidateExperience(canId)
-        ));
+    // Tìm kiếm ứng viên theo vai trò
+    @GetMapping("/role/{role}")
+    public ResponseEntity<Response> findByRole(@PathVariable CandidateRole role) {
+        try {
+            List<Candidate> candidates = candidateService.findByRole(role);
+            Response response = new Response(HttpStatus.OK.value(), "Candidates found", candidates);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            Response response = new Response(HttpStatus.BAD_REQUEST.value(), "Error searching by role", null);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    // Tìm kiếm ứng viên theo tên
+    @GetMapping("/name/{name}")
+    public ResponseEntity<Response> findByNameContainingIgnoreCase(@PathVariable String name) {
+        try {
+            List<Candidate> candidates = candidateService.findByNameContainingIgnoreCase(name);
+            Response response = new Response(HttpStatus.OK.value(), "Candidates found", candidates);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            Response response = new Response(HttpStatus.BAD_REQUEST.value(), "Error searching by name", null);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    // Tìm kiếm ứng viên theo ngày sinh
+    @GetMapping("/dob")
+    public ResponseEntity<Response> findByDobBetween(@RequestParam LocalDate startDate, @RequestParam LocalDate endDate) {
+        try {
+            List<Candidate> candidates = candidateService.findByDobBetween(startDate, endDate);
+            Response response = new Response(HttpStatus.OK.value(), "Candidates found", candidates);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            Response response = new Response(HttpStatus.BAD_REQUEST.value(), "Error searching by birthdate", null);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
     }
 }
