@@ -2,89 +2,117 @@ package vn.edu.iuh.fit.nguyenductai_21024541_week05.frontend.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
-import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.dto.CandidateAccountDTO;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.enums.CandidateRole;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Candidate;
+import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Response;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.frontend.models.CandidateModel;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/candidates")
 public class CandidateController {
 
+    private final CandidateModel candidateModel;
+
     @Autowired
-    private CandidateModel candidateModel;
-
-    @GetMapping
-    public ModelAndView listAllCandidates() {
-        List<Candidate> candidates = candidateModel.getAll();
-        ModelAndView mav = new ModelAndView("candidate-list");
-        mav.addObject("candidates", candidates);
-        return mav;
+    public CandidateController(CandidateModel candidateModel) {
+        this.candidateModel = candidateModel;
     }
 
-    @GetMapping("/{id}")
-    public ModelAndView getCandidateById(@PathVariable("id") Long id) {
-        Candidate candidate = candidateModel.getById(id);
-        ModelAndView mav = new ModelAndView("candidate-detail");
-        mav.addObject("candidate", candidate);
-        return mav;
+    // Phương thức thêm một Candidate
+    @GetMapping("/insert")
+    public String insertCandidate(Candidate candidate, Model model) {
+        Response response = candidateModel.insert(candidate);
+        model.addAttribute("response", response);
+        return "candidate_response"; // View để hiển thị thông báo kết quả
     }
 
-    @GetMapping("/create")
-    public ModelAndView showCreateCandidateForm() {
-        ModelAndView mav = new ModelAndView("candidate-create");
-        mav.addObject("candidate", new Candidate());
-        return mav;
+    // Phương thức thêm nhiều Candidate
+    @GetMapping("/insertAll")
+    public String insertAllCandidates(List<Candidate> candidates, Model model) {
+        Response response = candidateModel.insertAll(candidates);
+        model.addAttribute("response", response);
+        return "candidate_response"; // View để hiển thị thông báo kết quả
     }
 
-    @PostMapping("/create")
-    public ModelAndView createCandidate(@ModelAttribute Candidate candidate) {
-        candidateModel.insert(candidate);
-        return new ModelAndView("redirect:/candidates");
+    // Phương thức cập nhật một Candidate
+    @GetMapping("/update")
+    public String updateCandidate(@RequestParam Long id, Candidate candidate, Model model) {
+        Response response = candidateModel.update(id, candidate);
+        model.addAttribute("response", response);
+        return "candidate_response"; // View để hiển thị thông báo kết quả
     }
 
-    @GetMapping("/{id}/edit")
-    public ModelAndView showEditCandidateForm(@PathVariable("id") Long id) {
-        Candidate candidate = candidateModel.getById(id);
-        ModelAndView mav = new ModelAndView("candidate-edit");
-        mav.addObject("candidate", candidate);
-        return mav;
-    }
-
-    @PostMapping("/{id}/edit")
-    public ModelAndView editCandidate(@PathVariable("id") Long id, @ModelAttribute Candidate candidate) {
-        candidateModel.update(id, candidate);
-        return new ModelAndView("redirect:/candidates/" + id);
-    }
-
-    @PostMapping("/{id}/delete")
-    public ModelAndView deleteCandidate(@PathVariable("id") Long id) {
+    // Phương thức xóa một Candidate
+    @GetMapping("/delete")
+    public String deleteCandidate(@RequestParam Long id, Model model) {
         candidateModel.delete(id);
-        return new ModelAndView("redirect:/candidates");
+        model.addAttribute("message", "Candidate deleted successfully");
+        return "candidate_response"; // View để hiển thị thông báo kết quả
     }
 
-    @PostMapping("/login")
-    public ModelAndView loginCandidate(@ModelAttribute CandidateAccountDTO accountDTO) {
-        Candidate candidate = candidateModel.checkLoginAccount(accountDTO);
-        ModelAndView mav = new ModelAndView("candidate-login");
-        if (candidate != null) {
-            mav.addObject("candidate", candidate);
-            mav.addObject("message", "Login successful");
-        } else {
-            mav.addObject("error", "Invalid email or password");
+    // Phương thức lấy Candidate theo ID
+    @GetMapping("/getById")
+    public String getCandidateById(@RequestParam Long id, Model model) {
+        Optional<Candidate> candidate = candidateModel.getById(id);
+        model.addAttribute("candidate", candidate.orElse(null));
+        return "candidate_details"; // View để hiển thị thông tin Candidate
+    }
+
+    // Phương thức lấy tất cả Candidate
+    @GetMapping("/getAll")
+    public String getAllCandidates(Model model) {
+        List<Candidate> candidates = candidateModel.getAll();
+        model.addAttribute("candidates", candidates);
+        return "candidates_list"; // View để hiển thị danh sách Candidate
+    }
+
+    // Tìm kiếm Candidate theo email và password
+    @GetMapping("/search/login")
+    public String findByEmailAndPassword(
+            @RequestParam("email") String email,
+            @RequestParam("password") String password,
+            Model model) {
+        Optional<Candidate> candidate = candidateModel.findByEmailAndPassword(email, password);
+        if (candidate.isPresent()) {
+            model.addAttribute("candidate", candidate.get());
+            return "candidate_details"; // Hiển thị thông tin Candidate đã đăng nhập
         }
-        return mav;
+        model.addAttribute("message", "Invalid email or password");
+        return "login_form"; // Trả về form đăng nhập nếu không hợp lệ
     }
 
-    @GetMapping("/page/{page}")
-    public ModelAndView listCandidatesByPage(@PathVariable("page") int page) {
-        List<Candidate> candidates = candidateModel.getAllPaginated(page);
-        ModelAndView mav = new ModelAndView("candidate-paginated-list");
-        mav.addObject("candidates", candidates);
-        mav.addObject("currentPage", page);
-        return mav;
+    // Tìm kiếm Candidate theo vai trò
+    @GetMapping("/findByRole")
+    public String findByRole(@RequestParam CandidateRole role, Model model) {
+        List<Candidate> candidates = candidateModel.findByRole(role);
+        model.addAttribute("candidates", candidates);
+        return "candidates_list"; // Hiển thị danh sách Candidate theo vai trò
+    }
+
+    // Tìm kiếm Candidate theo tên
+    @GetMapping("/findByName")
+    public String findByNameContainingIgnoreCase(@RequestParam String name, Model model) {
+        List<Candidate> candidates = candidateModel.findByNameContainingIgnoreCase(name);
+        model.addAttribute("candidates", candidates);
+        return "candidates_list"; // Hiển thị danh sách Candidate theo tên
+    }
+
+    // Tìm kiếm Candidate theo ngày sinh
+    @GetMapping("/findByDobBetween")
+    public String findByDobBetween(
+            @RequestParam LocalDate startDate,
+            @RequestParam LocalDate endDate,
+            Model model) {
+        List<Candidate> candidates = candidateModel.findByDobBetween(startDate, endDate);
+        model.addAttribute("candidates", candidates);
+        return "candidates_list"; // Hiển thị danh sách Candidate theo ngày sinh
     }
 }

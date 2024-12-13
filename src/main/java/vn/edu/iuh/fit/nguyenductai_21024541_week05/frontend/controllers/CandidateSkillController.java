@@ -2,126 +2,89 @@ package vn.edu.iuh.fit.nguyenductai_21024541_week05.frontend.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
+import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.enums.SkillLevel;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.ids.CandidateSkillId;
-import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Candidate;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.CandidateSkill;
-import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Skill;
-import vn.edu.iuh.fit.nguyenductai_21024541_week05.frontend.models.CandidateModel;
+import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Response;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.frontend.models.CandidateSkillModel;
-import vn.edu.iuh.fit.nguyenductai_21024541_week05.frontend.models.SkillModel;
 
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/candidate-skills")
 public class CandidateSkillController {
 
-    @Autowired
-    private CandidateSkillModel candidateSkillModel;
+    private final CandidateSkillModel candidateSkillModel;
 
     @Autowired
-    private CandidateModel candidateModel;
+    public CandidateSkillController(CandidateSkillModel candidateSkillModel) {
+        this.candidateSkillModel = candidateSkillModel;
+    }
 
-    @Autowired
-    private SkillModel skillModel;
+    // Endpoint to add a single CandidateSkill
+    @PostMapping("/insert")
+    public String insertCandidateSkill(@ModelAttribute CandidateSkill candidateSkill, Model model) {
+        Response response = candidateSkillModel.insert(candidateSkill);
+        model.addAttribute("response", response);
+        return "candidate_skill_response"; // View to display the result
+    }
 
-    @GetMapping
-    public ModelAndView listAllCandidateSkills() {
+    // Endpoint to add multiple CandidateSkills
+    @PostMapping("/insertAll")
+    public String insertAllCandidateSkills(@ModelAttribute List<CandidateSkill> candidateSkills, Model model) {
+        Response response = candidateSkillModel.insertAll(candidateSkills);
+        model.addAttribute("response", response);
+        return "candidate_skill_response"; // View to display the result
+    }
+
+    // Endpoint to update a CandidateSkill
+    @PutMapping("/update")
+    public String updateCandidateSkill(@RequestParam CandidateSkillId id, @ModelAttribute CandidateSkill candidateSkill, Model model) {
+        Response response = candidateSkillModel.update(id, candidateSkill);
+        model.addAttribute("response", response);
+        return "candidate_skill_response"; // View to display the result
+    }
+
+    // Endpoint to delete a CandidateSkill
+    @DeleteMapping("/delete")
+    public String deleteCandidateSkill(@RequestParam CandidateSkillId id, Model model) {
+        candidateSkillModel.delete(id);
+        model.addAttribute("message", "Candidate skill deleted successfully");
+        return "candidate_skill_response"; // View to display the result
+    }
+
+    // Endpoint to get CandidateSkill by ID
+    @GetMapping("/getById")
+    public String getCandidateSkillById(@RequestParam CandidateSkillId id, Model model) {
+        Optional<CandidateSkill> candidateSkill = candidateSkillModel.getById(id);
+        model.addAttribute("candidateSkill", candidateSkill.orElse(null));
+        return "candidate_skill_details"; // View to display candidate skill details
+    }
+
+    // Endpoint to get all CandidateSkills
+    @GetMapping("/getAll")
+    public String getAllCandidateSkills(Model model) {
         List<CandidateSkill> candidateSkills = candidateSkillModel.getAll();
-        ModelAndView mav = new ModelAndView("candidate-skill-list");
-        mav.addObject("candidateSkills", candidateSkills);
-        return mav;
+        model.addAttribute("candidateSkills", candidateSkills);
+        return "candidate_skills_list"; // View to display all candidate skills
     }
 
-    @GetMapping("/{candidateId}/{skillId}")
-    public ModelAndView getCandidateSkillById(
-            @PathVariable("candidateId") Long candidateId,
-            @PathVariable("skillId") Long skillId
-    ) {
-        // Fetch Candidate and Skill from their respective models
-        Candidate candidate = candidateModel.getById(candidateId);
-        Skill skill = skillModel.getById(skillId);
-
-        // Create CandidateSkillId using Candidate and Skill objects
-        CandidateSkillId candidateSkillId = new CandidateSkillId(candidate, skill);
-
-        // Fetch CandidateSkill
-        CandidateSkill candidateSkill = candidateSkillModel.getById(candidateSkillId);
-
-        ModelAndView mav = new ModelAndView("candidate-skill-detail");
-        mav.addObject("candidateSkill", candidateSkill);
-        return mav;
+    // Endpoint to get CandidateSkills by CandidateId
+    @GetMapping("/getSkillsByCandidateId")
+    public String getSkillsByCandidateId(@RequestParam Long candidateId, Model model) {
+        List<CandidateSkill> candidateSkills = candidateSkillModel.getSkillsByCandidateId(candidateId);
+        model.addAttribute("candidateSkills", candidateSkills);
+        return "candidate_skills_list"; // View to display candidate skills by candidate ID
     }
 
-    @GetMapping("/create")
-    public ModelAndView showCreateCandidateSkillForm() {
-        ModelAndView mav = new ModelAndView("candidate-skill-create");
-        mav.addObject("candidateSkill", new CandidateSkill());
-        return mav;
-    }
-
-    @PostMapping("/create")
-    public ModelAndView createCandidateSkill(@ModelAttribute CandidateSkill candidateSkill) {
-        candidateSkillModel.insert(candidateSkill);
-        return new ModelAndView("redirect:/candidate-skills");
-    }
-
-    @GetMapping("/{candidateId}/{skillId}/edit")
-    public ModelAndView showEditCandidateSkillForm(
-            @PathVariable("candidateId") Long candidateId,
-            @PathVariable("skillId") Long skillId
-    ) {
-        // Fetch Candidate and Skill from their respective models
-        Candidate candidate = candidateModel.getById(candidateId);
-        Skill skill = skillModel.getById(skillId);
-
-        // Create CandidateSkillId using Candidate and Skill objects
-        CandidateSkillId candidateSkillId = new CandidateSkillId(candidate, skill);
-
-        // Fetch CandidateSkill
-        CandidateSkill candidateSkill = candidateSkillModel.getById(candidateSkillId);
-
-        ModelAndView mav = new ModelAndView("candidate-skill-edit");
-        mav.addObject("candidateSkill", candidateSkill);
-        return mav;
-    }
-
-    @PostMapping("/{candidateId}/{skillId}/edit")
-    public ModelAndView editCandidateSkill(
-            @PathVariable("candidateId") Long candidateId,
-            @PathVariable("skillId") Long skillId,
-            @ModelAttribute CandidateSkill candidateSkill
-    ) {
-        // Fetch Candidate and Skill from their respective models
-        Candidate candidate = candidateModel.getById(candidateId);
-        Skill skill = skillModel.getById(skillId);
-
-        // Create CandidateSkillId using Candidate and Skill objects
-        CandidateSkillId candidateSkillId = new CandidateSkillId(candidate, skill);
-
-        // Update CandidateSkill
-        candidateSkillModel.update(candidateSkillId, candidateSkill);
-
-        return new ModelAndView("redirect:/candidate-skills/" + candidateId + "/" + skillId);
-    }
-
-    @PostMapping("/{candidateId}/{skillId}/delete")
-    public ModelAndView deleteCandidateSkill(
-            @PathVariable("candidateId") Long candidateId,
-            @PathVariable("skillId") Long skillId
-    ) {
-        // Fetch Candidate and Skill from their respective models
-        Candidate candidate = candidateModel.getById(candidateId);
-        Skill skill = skillModel.getById(skillId);
-
-        // Create CandidateSkillId using Candidate and Skill objects
-        CandidateSkillId candidateSkillId = new CandidateSkillId(candidate, skill);
-
-        // Delete CandidateSkill
-        candidateSkillModel.delete(candidateSkillId);
-
-        return new ModelAndView("redirect:/candidate-skills");
+    // Endpoint to get CandidateSkills by SkillLevel
+    @GetMapping("/getSkillsByLevel")
+    public String getSkillsByLevel(@RequestParam SkillLevel skillLevel, Model model) {
+        List<CandidateSkill> candidateSkills = candidateSkillModel.getSkillsByLevel(skillLevel);
+        model.addAttribute("candidateSkills", candidateSkills);
+        return "candidate_skills_list"; // View to display candidate skills by skill level
     }
 }

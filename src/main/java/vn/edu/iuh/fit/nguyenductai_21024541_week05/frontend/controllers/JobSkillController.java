@@ -2,134 +2,97 @@ package vn.edu.iuh.fit.nguyenductai_21024541_week05.frontend.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.ids.JobSkillId;
-import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Job;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.JobSkill;
-import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Skill;
-import vn.edu.iuh.fit.nguyenductai_21024541_week05.frontend.models.JobModel;
+import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Response;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.frontend.models.JobSkillModel;
-import vn.edu.iuh.fit.nguyenductai_21024541_week05.frontend.models.SkillModel;
+import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.enums.SkillLevel;
 
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/job-skills")
 public class JobSkillController {
 
-    @Autowired
-    private JobSkillModel jobSkillModel;
+    private final JobSkillModel jobSkillModel;
 
     @Autowired
-    private JobModel jobModel;
+    public JobSkillController(JobSkillModel jobSkillModel) {
+        this.jobSkillModel = jobSkillModel;
+    }
 
-    @Autowired
-    private SkillModel skillModel;
+    // Endpoint to add a single JobSkill
+    @PostMapping("/insert")
+    public String insertJobSkill(@ModelAttribute JobSkill jobSkill, Model model) {
+        Response response = jobSkillModel.insert(jobSkill);
+        model.addAttribute("response", response);
+        return "job_skill_response"; // View to display the result
+    }
 
-    @GetMapping
-    public ModelAndView listAllJobSkills() {
+    // Endpoint to add multiple JobSkills
+    @PostMapping("/insertAll")
+    public String insertAllJobSkills(@ModelAttribute List<JobSkill> jobSkills, Model model) {
+        Response response = jobSkillModel.insertAll(jobSkills);
+        model.addAttribute("response", response);
+        return "job_skill_response"; // View to display the result
+    }
+
+    // Endpoint to update a JobSkill
+    @PutMapping("/update")
+    public String updateJobSkill(@ModelAttribute JobSkillId id, @ModelAttribute JobSkill jobSkill, Model model) {
+        Response response = jobSkillModel.update(id, jobSkill);
+        model.addAttribute("response", response);
+        return "job_skill_response"; // View to display the result
+    }
+
+    // Endpoint to delete a JobSkill
+    @DeleteMapping("/delete")
+    public String deleteJobSkill(@ModelAttribute JobSkillId id, Model model) {
+        jobSkillModel.delete(id);
+        model.addAttribute("message", "Job Skill deleted successfully");
+        return "job_skill_response"; // View to display the result
+    }
+
+    // Endpoint to get a JobSkill by ID
+    @GetMapping("/getById")
+    public String getJobSkillById(@ModelAttribute JobSkillId id, Model model) {
+        Optional<JobSkill> jobSkill = jobSkillModel.getById(id);
+        model.addAttribute("jobSkill", jobSkill.orElse(null));
+        return "job_skill_details"; // View to display job skill details
+    }
+
+    // Endpoint to get all JobSkills
+    @GetMapping("/getAll")
+    public String getAllJobSkills(Model model) {
         List<JobSkill> jobSkills = jobSkillModel.getAll();
-        ModelAndView mav = new ModelAndView("job-skill-list");
-        mav.addObject("jobSkills", jobSkills);
-        return mav;
+        model.addAttribute("jobSkills", jobSkills);
+        return "job_skills_list"; // View to display all job skills
     }
 
-    @GetMapping("/{jobId}/{skillId}")
-    public ModelAndView getJobSkillById(
-            @PathVariable("jobId") Long jobId,
-            @PathVariable("skillId") Long skillId
-    ) {
-        // Fetch Job and Skill objects from their respective models
-        Job job = jobModel.getById(jobId);
-        Skill skill = skillModel.getById(skillId);
-
-        // Create JobSkillId using Job and Skill objects
-        JobSkillId jobSkillId = new JobSkillId(job, skill);
-
-        // Fetch JobSkill
-        JobSkill jobSkill = jobSkillModel.getById(jobSkillId);
-
-        ModelAndView mav = new ModelAndView("job-skill-detail");
-        mav.addObject("jobSkill", jobSkill);
-        return mav;
+    // Endpoint to get JobSkills by Skill ID
+    @GetMapping("/getBySkillId")
+    public String getJobSkillsBySkillId(@RequestParam Long skillId, Model model) {
+        List<JobSkill> jobSkills = jobSkillModel.getBySkillId(skillId);
+        model.addAttribute("jobSkills", jobSkills);
+        return "job_skills_list"; // View to display job skills by skill ID
     }
 
-    @GetMapping("/create")
-    public ModelAndView showCreateJobSkillForm() {
-        ModelAndView mav = new ModelAndView("job-skill-create");
-        mav.addObject("jobSkill", new JobSkill());
-        return mav;
+    // Endpoint to get JobSkills by Job ID
+    @GetMapping("/getByJobId")
+    public String getJobSkillsByJobId(@RequestParam Long jobId, Model model) {
+        List<JobSkill> jobSkills = jobSkillModel.getByJobId(jobId);
+        model.addAttribute("jobSkills", jobSkills);
+        return "job_skills_list"; // View to display job skills by job ID
     }
 
-    @PostMapping("/create")
-    public ModelAndView createJobSkill(@ModelAttribute JobSkill jobSkill) {
-        jobSkillModel.insert(jobSkill);
-        return new ModelAndView("redirect:/job-skills");
-    }
-
-    @GetMapping("/{jobId}/{skillId}/edit")
-    public ModelAndView showEditJobSkillForm(
-            @PathVariable("jobId") Long jobId,
-            @PathVariable("skillId") Long skillId
-    ) {
-        // Fetch Job and Skill objects from their respective models
-        Job job = jobModel.getById(jobId);
-        Skill skill = skillModel.getById(skillId);
-
-        // Create JobSkillId using Job and Skill objects
-        JobSkillId jobSkillId = new JobSkillId(job, skill);
-
-        // Fetch JobSkill
-        JobSkill jobSkill = jobSkillModel.getById(jobSkillId);
-
-        ModelAndView mav = new ModelAndView("job-skill-edit");
-        mav.addObject("jobSkill", jobSkill);
-        return mav;
-    }
-
-    @PostMapping("/{jobId}/{skillId}/edit")
-    public ModelAndView editJobSkill(
-            @PathVariable("jobId") Long jobId,
-            @PathVariable("skillId") Long skillId,
-            @ModelAttribute JobSkill jobSkill
-    ) {
-        // Fetch Job and Skill objects from their respective models
-        Job job = jobModel.getById(jobId);
-        Skill skill = skillModel.getById(skillId);
-
-        // Create JobSkillId using Job and Skill objects
-        JobSkillId jobSkillId = new JobSkillId(job, skill);
-
-        // Update JobSkill
-        jobSkillModel.update(jobSkillId, jobSkill);
-
-        return new ModelAndView("redirect:/job-skills/" + jobId + "/" + skillId);
-    }
-
-    @PostMapping("/{jobId}/{skillId}/delete")
-    public ModelAndView deleteJobSkill(
-            @PathVariable("jobId") Long jobId,
-            @PathVariable("skillId") Long skillId
-    ) {
-        // Fetch Job and Skill objects from their respective models
-        Job job = jobModel.getById(jobId);
-        Skill skill = skillModel.getById(skillId);
-
-        // Create JobSkillId using Job and Skill objects
-        JobSkillId jobSkillId = new JobSkillId(job, skill);
-
-        // Delete JobSkill
-        jobSkillModel.delete(jobSkillId);
-
-        return new ModelAndView("redirect:/job-skills");
-    }
-
-    @GetMapping("/jobs/{skillId}")
-    public ModelAndView getAllJobsBySkill(@PathVariable("skillId") Long skillId) {
-        List<?> jobs = jobSkillModel.getAllJobsBySkill(skillId);
-        ModelAndView mav = new ModelAndView("jobs-by-skill");
-        mav.addObject("jobs", jobs);
-        return mav;
+    // Endpoint to get JobSkills by Skill Level
+    @GetMapping("/getBySkillLevel")
+    public String getJobSkillsBySkillLevel(@RequestParam SkillLevel skillLevel, Model model) {
+        List<JobSkill> jobSkills = jobSkillModel.getBySkillLevel(skillLevel);
+        model.addAttribute("jobSkills", jobSkills);
+        return "job_skills_list"; // View to display job skills by skill level
     }
 }
