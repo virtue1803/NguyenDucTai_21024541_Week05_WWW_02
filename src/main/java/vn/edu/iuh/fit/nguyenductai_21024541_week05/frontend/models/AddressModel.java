@@ -13,6 +13,7 @@ import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Response;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class AddressModel {
@@ -55,9 +56,14 @@ public class AddressModel {
     }
 
     // Phương thức lấy Address theo ID
-    public Address getById(Long id) {
+    public Optional<Address> getById(Long id) {
         URI uri = URI.create(baseUrl + "/getById/" + id);
-        return restTemplate.getForObject(uri, Address.class);
+        try {
+            Address address = restTemplate.getForObject(uri, Address.class);
+            return Optional.ofNullable(address);
+        } catch (Exception e) {
+            return Optional.empty();  // Return empty Optional if retrieval fails
+        }
     }
 
     // Phương thức lấy tất cả các Address
