@@ -16,14 +16,14 @@ import java.util.Optional;
 
 @Slf4j
 @RestController
-@RequestMapping("/jobs")  // Đường dẫn API cho Job
+@RequestMapping("/api/jobs")  // Cập nhật đường dẫn API cho Job
 public class JobResources implements IResources<Job, Long> {
 
     @Autowired
     private JobService jobService;
 
     @Override
-    @PostMapping("/insert")
+    @PostMapping
     public ResponseEntity<Response> insert(@RequestBody Job job) {
         try {
             Job createdJob = jobService.add(job);
@@ -36,7 +36,7 @@ public class JobResources implements IResources<Job, Long> {
     }
 
     @Override
-    @PostMapping("/insertAll")
+    @PostMapping("/bulk")
     public ResponseEntity<Response> insertAll(@RequestBody List<Job> jobs) {
         try {
             List<Job> createdJobs = jobService.addMany(jobs);
@@ -49,7 +49,7 @@ public class JobResources implements IResources<Job, Long> {
     }
 
     @Override
-    @PutMapping("/update/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<Response> update(@PathVariable Long id, @RequestBody Job job) {
         try {
             job.setId(id);  // Set the ID for updating
@@ -66,7 +66,7 @@ public class JobResources implements IResources<Job, Long> {
     }
 
     @Override
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Response> delete(@PathVariable Long id) {
         try {
             jobService.delete(id);
@@ -82,7 +82,7 @@ public class JobResources implements IResources<Job, Long> {
     }
 
     @Override
-    @GetMapping("/get/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<Response> getById(@PathVariable Long id) {
         try {
             Optional<Job> job = jobService.getById(id);
@@ -100,7 +100,7 @@ public class JobResources implements IResources<Job, Long> {
     }
 
     @Override
-    @GetMapping("/getAll")
+    @GetMapping
     public ResponseEntity<Response> getAll() {
         try {
             Iterator<Job> jobs = jobService.getAll();
@@ -113,7 +113,7 @@ public class JobResources implements IResources<Job, Long> {
     }
 
     // Tìm kiếm công việc theo tên công việc
-    @GetMapping("/searchByJobName")
+    @GetMapping("/search/by-name")
     public ResponseEntity<Response> findByJobName(@RequestParam String jobName) {
         try {
             List<Job> jobs = jobService.findByJobName(jobName);
@@ -125,7 +125,7 @@ public class JobResources implements IResources<Job, Long> {
     }
 
     // Tìm công việc theo công ty
-    @GetMapping("/searchByCompanyName")
+    @GetMapping("/search/by-company")
     public ResponseEntity<Response> findByCompanyName(@RequestParam String companyName) {
         try {
             List<Job> jobs = jobService.findByCompanyName(companyName);
@@ -137,7 +137,7 @@ public class JobResources implements IResources<Job, Long> {
     }
 
     // Tìm công việc theo mô tả
-    @GetMapping("/searchByJobDesc")
+    @GetMapping("/search/by-description")
     public ResponseEntity<Response> findByJobDesc(@RequestParam String jobDesc) {
         try {
             List<Job> jobs = jobService.findByJobDesc(jobDesc);
