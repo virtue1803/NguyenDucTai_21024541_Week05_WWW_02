@@ -12,6 +12,8 @@ import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.services.impl.Candida
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.resources.IResources;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -99,12 +101,15 @@ public class CandidateResources implements IResources<Candidate, Long> {
         }
     }
 
-    // Lấy tất cả ứng viên
     @Override
     @GetMapping
     public ResponseEntity<Response> getAll() {
         try {
-            List<Candidate> candidates = (List<Candidate>) candidateService.getAll();
+            // Chuyển Iterator thành List
+            Iterator<Candidate> iterator = candidateService.getAll();
+            List<Candidate> candidates = new ArrayList<>();
+            iterator.forEachRemaining(candidates::add); // Thêm các phần tử vào List từ Iterator
+
             Response response = new Response(HttpStatus.OK.value(), "All candidates retrieved successfully", candidates);
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
@@ -112,6 +117,7 @@ public class CandidateResources implements IResources<Candidate, Long> {
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
     }
+
 
     // Tìm kiếm ứng viên theo email và password
     @PostMapping("/login")
