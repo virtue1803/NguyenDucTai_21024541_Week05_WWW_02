@@ -1,58 +1,82 @@
 package vn.edu.iuh.fit.nguyenductai_21024541_week05.frontend.models;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Response;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Skill;
+import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.enums.SkillType;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class SkillModel {
 
     private final ObjectMapper mapper;
     private final RestTemplate restTemplate;
-    private final String baseUri = "http://localhost:8080/api/skill/";
+    private final String baseUrl = "http://localhost:8080/api/skills";  // URL của API Skill
 
-    public SkillModel() {
-        this.mapper = new ObjectMapper().registerModule(new JavaTimeModule());
-        this.restTemplate = new RestTemplate();
+    @Autowired
+    public SkillModel(ObjectMapper mapper, RestTemplate restTemplate) {
+        this.mapper = mapper;
+        this.restTemplate = restTemplate;
+        this.mapper.registerModule(new JavaTimeModule());  // Để xử lý dữ liệu thời gian
     }
 
-    // Insert a new Skill
-    public Skill insert(Skill skill) {
-        Response response = restTemplate.postForObject(URI.create(baseUri), skill, Response.class);
-        return mapper.convertValue(response.getData(), Skill.class);
+    // Phương thức thêm một Skill
+    public Response insert(Skill skill) {
+        URI uri = URI.create(baseUrl);
+        return restTemplate.postForObject(uri, skill, Response.class);
     }
 
-    // Insert multiple Skills (Not yet implemented in backend)
-    public List<Skill> insertAll(List<Skill> skills) {
-        throw new UnsupportedOperationException("Not yet implemented in backend");
+    // Phương thức thêm nhiều Skill
+    public Response insertAll(List<Skill> skills) {
+        URI uri = URI.create(baseUrl + "/bulk");
+        return restTemplate.postForObject(uri, skills, Response.class);
     }
 
-    // Update a Skill
-    public Skill update(Long id, Skill skill) {
-        restTemplate.put(URI.create(baseUri + id), skill);
-        return getById(id);
+    // Phương thức cập nhật một Skill
+    public Response update(Long id, Skill skill) {
+        URI uri = URI.create(baseUrl + "/" + id);
+        restTemplate.put(uri, skill);
+        return new Response(HttpStatus.OK.value(), "Skill updated successfully", skill);
     }
 
-    // Delete a Skill
+    // Phương thức xóa một Skill
     public void delete(Long id) {
-        restTemplate.delete(URI.create(baseUri + id));
+        URI uri = URI.create(baseUrl + "/" + id);
+        restTemplate.delete(uri);
     }
 
-    // Get a Skill by ID
-    public Skill getById(Long id) {
-        Response response = restTemplate.getForObject(URI.create(baseUri + id), Response.class);
-        return mapper.convertValue(response.getData(), Skill.class);
+    // Phương thức lấy Skill theo ID
+    public Optional<Skill> getById(Long id) {
+        URI uri = URI.create(baseUrl + "/" + id);
+        return Optional.ofNullable(restTemplate.getForObject(uri, Skill.class));
     }
 
-    // Get all Skills
+    // Phương thức lấy tất cả Skill
     public List<Skill> getAll() {
-        Response response = restTemplate.getForObject(URI.create(baseUri), Response.class);
-        return mapper.convertValue(response.getData(), new TypeReference<List<Skill>>() {});
+        URI uri = URI.create(baseUrl);
+        return restTemplate.exchange(uri, HttpMethod.GET, null, new ParameterizedTypeReference<List<Skill>>() {}).getBody();
+    }
+
+    // Tìm kiếm Skill theo tên (không phân biệt hoa thường)
+    public List<Skill> getSkillsByName(String skillName) {
+        URI uri = URI.create(baseUrl + "/search?skillName=" + skillName);
+        return restTemplate.exchange(uri, HttpMethod.GET, null, new ParameterizedTypeReference<List<Skill>>() {}).getBody();
+    }
+
+    // Tìm kiếm Skill theo loại
+    public List<Skill> getSkillsByType(SkillType skillType) {
+        URI uri = URI.create(baseUrl + "/search/type?skillType=" + skillType);
+        return restTemplate.exchange(uri, HttpMethod.GET, null, new ParameterizedTypeReference<List<Skill>>() {}).getBody();
     }
 }

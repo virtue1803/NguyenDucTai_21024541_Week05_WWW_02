@@ -3,6 +3,9 @@ package vn.edu.iuh.fit.nguyenductai_21024541_week05.frontend.models;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Address;
@@ -13,41 +16,71 @@ import java.util.List;
 
 @Component
 public class AddressModel {
+
     private final ObjectMapper mapper;
     private final RestTemplate restTemplate;
-    private final String baseUri = "http://localhost:8080/api/address/";
+    private final String baseUrl = "http://localhost:8080/api/address";  // URL của API Address
 
-    public AddressModel() {
-        this.mapper = new ObjectMapper().registerModule(new JavaTimeModule());
-        this.restTemplate = new RestTemplate();
+    @Autowired
+    public AddressModel(ObjectMapper mapper, RestTemplate restTemplate) {
+        this.mapper = mapper;
+        this.restTemplate = restTemplate;
+        this.mapper.registerModule(new JavaTimeModule());  // Để xử lý dữ liệu thời gian
     }
 
-    // Method to insert a new Address
-    public Address insert(Address address) {
-        Response response = restTemplate.postForObject(URI.create(baseUri), address, Response.class);
-        return mapper.convertValue(response.getData(), Address.class);
+    // Phương thức thêm một Address
+    public Response insert(Address address) {
+        URI uri = URI.create(baseUrl + "/insert");
+        return restTemplate.postForObject(uri, address, Response.class);
     }
 
-    // Method to get Address by ID
+    // Phương thức thêm nhiều Address
+    public Response insertAll(List<Address> addresses) {
+        URI uri = URI.create(baseUrl + "/insertAll");
+        return restTemplate.postForObject(uri, addresses, Response.class);
+    }
+
+    // Phương thức cập nhật một Address
+    public Response update(Long id, Address address) {
+        URI uri = URI.create(baseUrl + "/update/" + id);
+        restTemplate.put(uri, address);
+        return new Response(200, "Update Successful", null);  // Cần trả về Response từ backend thực tế
+    }
+
+    // Phương thức xóa một Address
+    public Response delete(Long id) {
+        URI uri = URI.create(baseUrl + "/delete/" + id);
+        restTemplate.delete(uri);
+        return new Response(200, "Delete Successful", null);  // Cần trả về Response từ backend thực tế
+    }
+
+    // Phương thức lấy Address theo ID
     public Address getById(Long id) {
-        Response response = restTemplate.getForObject(URI.create(baseUri + id), Response.class);
-        return mapper.convertValue(response.getData(), Address.class);
+        URI uri = URI.create(baseUrl + "/getById/" + id);
+        return restTemplate.getForObject(uri, Address.class);
     }
 
-    // Method to get all Addresses
+    // Phương thức lấy tất cả các Address
     public List<Address> getAll() {
-        Response response = restTemplate.getForObject(URI.create(baseUri), Response.class);
-        return mapper.convertValue(response.getData(), new TypeReference<List<Address>>() {});
+        URI uri = URI.create(baseUrl + "/getAll");
+        return restTemplate.exchange(uri, HttpMethod.GET, null, new ParameterizedTypeReference<List<Address>>() {}).getBody();
     }
 
-    // Method to update an Address
-    public Address update(Long id, Address address) {
-        restTemplate.put(URI.create(baseUri + id), address);
-        return getById(id); // Return updated Address
+    // Tìm kiếm Address theo thành phố
+    public List<Address> findByCity(String city) {
+        URI uri = URI.create(baseUrl + "/findByCity?city=" + city);
+        return restTemplate.exchange(uri, HttpMethod.GET, null, new ParameterizedTypeReference<List<Address>>() {}).getBody();
     }
 
-    // Method to delete an Address
-    public void delete(Long id) {
-        restTemplate.delete(URI.create(baseUri + id));
+    // Tìm kiếm Address theo quốc gia
+    public List<Address> findByCountry(String country) {
+        URI uri = URI.create(baseUrl + "/findByCountry?country=" + country);
+        return restTemplate.exchange(uri, HttpMethod.GET, null, new ParameterizedTypeReference<List<Address>>() {}).getBody();
+    }
+
+    // Tìm kiếm Address theo đường phố
+    public List<Address> findByStreet(String street) {
+        URI uri = URI.create(baseUrl + "/findByStreet?street=" + street);
+        return restTemplate.exchange(uri, HttpMethod.GET, null, new ParameterizedTypeReference<List<Address>>() {}).getBody();
     }
 }

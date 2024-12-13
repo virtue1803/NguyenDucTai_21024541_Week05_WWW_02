@@ -1,7 +1,12 @@
 package vn.edu.iuh.fit.nguyenductai_21024541_week05.frontend.models;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Company;
@@ -9,51 +14,68 @@ import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Response;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class CompanyModel {
 
     private final ObjectMapper mapper;
     private final RestTemplate restTemplate;
-    private final String baseUri = "http://localhost:8080/api/company/";
+    private final String baseUrl = "http://localhost:8080/companies";  // URL của API Company
 
-    public CompanyModel() {
-        this.mapper = new ObjectMapper().registerModule(new JavaTimeModule());
-        this.restTemplate = new RestTemplate();
+    @Autowired
+    public CompanyModel(ObjectMapper mapper, RestTemplate restTemplate) {
+        this.mapper = mapper;
+        this.restTemplate = restTemplate;
+        this.mapper.registerModule(new JavaTimeModule());  // Để xử lý dữ liệu thời gian
     }
 
-    // Insert a new company
-    public Company insert(Company company) {
-        Response response = restTemplate.postForObject(URI.create(baseUri), company, Response.class);
-        return mapper.convertValue(response.getData(), Company.class);
+    // Thêm một Company
+    public Response insert(Company company) {
+        URI uri = URI.create(baseUrl);
+        return restTemplate.postForObject(uri, company, Response.class);
     }
 
-    // Insert multiple companies
-    public List<Company> insertAll(List<Company> companies) {
-        Response response = restTemplate.postForObject(URI.create(baseUri + "list"), companies, Response.class);
-        return mapper.convertValue(response.getData(), new TypeReference<List<Company>>() {});
+    // Thêm nhiều Company
+    public Response insertAll(List<Company> companies) {
+        URI uri = URI.create(baseUrl + "/bulk");
+        return restTemplate.postForObject(uri, companies, Response.class);
     }
 
-    // Update a company
-    public Company update(Long id, Company company) {
-        restTemplate.put(URI.create(baseUri + id), company);
-        return getById(id); // Fetch updated company details
+    // Cập nhật một Company
+    public Response update(Long id, Company company) {
+        URI uri = URI.create(baseUrl + "/" + id);
+        restTemplate.put(uri, company);
+        return new Response(HttpStatus.OK.value(), "Company updated successfully", company);
     }
 
-    // Delete a company
+    // Xóa một Company
     public void delete(Long id) {
-        restTemplate.delete(URI.create(baseUri + id));
+        URI uri = URI.create(baseUrl + "/" + id);
+        restTemplate.delete(uri);
     }
 
-    // Get a company by ID
-    public Company getById(Long id) {
-        Response response = restTemplate.getForObject(URI.create(baseUri + id), Response.class);
-        return mapper.convertValue(response.getData(), Company.class);
+    // Lấy Company theo ID
+    public Optional<Company> getById(Long id) {
+        URI uri = URI.create(baseUrl + "/" + id);
+        return Optional.ofNullable(restTemplate.getForObject(uri, Company.class));
     }
 
-    // Get all companies
+    // Lấy tất cả Company
     public List<Company> getAll() {
-        Response response = restTemplate.getForObject(URI.create(baseUri), Response.class);
-        return mapper.convertValue(response.getData(), new TypeReference<List<Company>>() {});
+        URI uri = URI.create(baseUrl);
+        return restTemplate.exchange(uri, HttpMethod.GET, null, new ParameterizedTypeReference<List<Company>>() {}).getBody();
+    }
+
+    // Tìm kiếm Company theo tên
+    public List<Company> findByCompName(String name) {
+        URI uri = URI.create(baseUrl + "/search/name?name=" + name);
+        return restTemplate.exchange(uri, HttpMethod.GET, null, new ParameterizedTypeReference<List<Company>>() {}).getBody();
+    }
+
+    // Tìm kiếm Company theo email
+    public Optional<Company> findByEmail(String email) {
+        URI uri = URI.create(baseUrl + "/search/email?email=" + email);
+        return Optional.ofNullable(restTemplate.getForObject(uri, Company.class));
     }
 }

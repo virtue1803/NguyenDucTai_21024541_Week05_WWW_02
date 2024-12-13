@@ -1,7 +1,12 @@
 package vn.edu.iuh.fit.nguyenductai_21024541_week05.frontend.models;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Experience;
@@ -9,51 +14,80 @@ import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Response;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class ExperienceModel {
 
     private final ObjectMapper mapper;
     private final RestTemplate restTemplate;
-    private final String baseUri = "http://localhost:8080/api/experience/";
+    private final String baseUrl = "http://localhost:8080/api/experiences";  // URL của API Experience
 
-    public ExperienceModel() {
-        this.mapper = new ObjectMapper().registerModule(new JavaTimeModule());
-        this.restTemplate = new RestTemplate();
+    @Autowired
+    public ExperienceModel(ObjectMapper mapper, RestTemplate restTemplate) {
+        this.mapper = mapper;
+        this.restTemplate = restTemplate;
+        this.mapper.registerModule(new JavaTimeModule());  // Để xử lý dữ liệu thời gian
     }
 
-    // Insert a new Experience
-    public Experience insert(Experience experience) {
-        Response response = restTemplate.postForObject(URI.create(baseUri), experience, Response.class);
-        return mapper.convertValue(response.getData(), Experience.class);
+    // Thêm một Experience
+    public Response insert(Experience experience) {
+        URI uri = URI.create(baseUrl);
+        return restTemplate.postForObject(uri, experience, Response.class);
     }
 
-    // Insert multiple Experiences
-    public List<Experience> insertAll(List<Experience> experiences) {
-        Response response = restTemplate.postForObject(URI.create(baseUri + "list"), experiences, Response.class);
-        return mapper.convertValue(response.getData(), new TypeReference<List<Experience>>() {});
+    // Thêm nhiều Experience
+    public Response insertAll(List<Experience> experiences) {
+        URI uri = URI.create(baseUrl + "/bulk");
+        return restTemplate.postForObject(uri, experiences, Response.class);
     }
 
-    // Update an Experience
-    public Experience update(Long id, Experience experience) {
-        restTemplate.put(URI.create(baseUri + id), experience);
-        return getById(id);
+    // Cập nhật một Experience
+    public Response update(Long id, Experience experience) {
+        URI uri = URI.create(baseUrl + "/" + id);
+        restTemplate.put(uri, experience);
+        return new Response(HttpStatus.OK.value(), "Experience updated successfully", experience);
     }
 
-    // Delete an Experience
+    // Xóa một Experience
     public void delete(Long id) {
-        restTemplate.delete(URI.create(baseUri + id));
+        URI uri = URI.create(baseUrl + "/" + id);
+        restTemplate.delete(uri);
     }
 
-    // Get an Experience by ID
-    public Experience getById(Long id) {
-        Response response = restTemplate.getForObject(URI.create(baseUri + id), Response.class);
-        return mapper.convertValue(response.getData(), Experience.class);
+    // Lấy một Experience theo ID
+    public Optional<Experience> getById(Long id) {
+        URI uri = URI.create(baseUrl + "/" + id);
+        return Optional.ofNullable(restTemplate.getForObject(uri, Experience.class));
     }
 
-    // Get all Experiences
+    // Lấy tất cả Experience
     public List<Experience> getAll() {
-        Response response = restTemplate.getForObject(URI.create(baseUri), Response.class);
-        return mapper.convertValue(response.getData(), new TypeReference<List<Experience>>() {});
+        URI uri = URI.create(baseUrl);
+        return restTemplate.exchange(uri, HttpMethod.GET, null, new ParameterizedTypeReference<List<Experience>>() {}).getBody();
+    }
+
+    // Tìm kiếm Experience theo ID ứng viên
+    public List<Experience> getByCandidateId(Long candidateId) {
+        URI uri = URI.create(baseUrl + "/candidate/" + candidateId);
+        return restTemplate.exchange(uri, HttpMethod.GET, null, new ParameterizedTypeReference<List<Experience>>() {}).getBody();
+    }
+
+    // Tìm kiếm Experience theo tên công ty
+    public List<Experience> getByCompanyName(String companyName) {
+        URI uri = URI.create(baseUrl + "/company/" + companyName);
+        return restTemplate.exchange(uri, HttpMethod.GET, null, new ParameterizedTypeReference<List<Experience>>() {}).getBody();
+    }
+
+    // Tìm kiếm Experience theo vai trò
+    public List<Experience> getByRole(String role) {
+        URI uri = URI.create(baseUrl + "/role/" + role);
+        return restTemplate.exchange(uri, HttpMethod.GET, null, new ParameterizedTypeReference<List<Experience>>() {}).getBody();
+    }
+
+    // Tìm kiếm Experience theo công ty và vai trò
+    public List<Experience> getByCompanyAndRole(String companyName, String role) {
+        URI uri = URI.create(baseUrl + "/company/" + companyName + "/role/" + role);
+        return restTemplate.exchange(uri, HttpMethod.GET, null, new ParameterizedTypeReference<List<Experience>>() {}).getBody();
     }
 }
