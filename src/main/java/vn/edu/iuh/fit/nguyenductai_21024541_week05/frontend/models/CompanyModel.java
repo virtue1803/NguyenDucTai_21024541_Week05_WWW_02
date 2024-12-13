@@ -21,7 +21,7 @@ public class CompanyModel {
 
     private final ObjectMapper mapper;
     private final RestTemplate restTemplate;
-    private final String baseUrl = "http://localhost:8080/companies";  // URL của API Company
+    private final String baseUrl = "http://localhost:8080/api/companies";  // URL của API Company
 
     @Autowired
     public CompanyModel(ObjectMapper mapper, RestTemplate restTemplate) {

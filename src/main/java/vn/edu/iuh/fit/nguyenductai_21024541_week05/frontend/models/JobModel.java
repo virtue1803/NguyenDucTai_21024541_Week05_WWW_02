@@ -21,7 +21,7 @@ public class JobModel {
 
     private final ObjectMapper mapper;
     private final RestTemplate restTemplate;
-    private final String baseUrl = "http://localhost:8080/jobs";  // URL của API Job
+    private final String baseUrl = "http://localhost:8080/api/jobs";  // URL của API Job
 
     @Autowired
     public JobModel(ObjectMapper mapper, RestTemplate restTemplate) {
