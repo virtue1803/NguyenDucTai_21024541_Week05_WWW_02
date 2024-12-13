@@ -23,7 +23,7 @@ public class ExperienceController {
     }
 
     // Endpoint to add a single Experience
-    @PostMapping("/insert")
+    @PostMapping("/insert-experience")
     public String insertExperience(@ModelAttribute Experience experience, Model model) {
         Response response = experienceModel.insert(experience);
         model.addAttribute("response", response);
@@ -31,7 +31,7 @@ public class ExperienceController {
     }
 
     // Endpoint to add multiple Experiences
-    @PostMapping("/insertAll")
+    @PostMapping("/insertAll-experience")
     public String insertAllExperiences(@ModelAttribute List<Experience> experiences, Model model) {
         Response response = experienceModel.insertAll(experiences);
         model.addAttribute("response", response);
@@ -39,7 +39,7 @@ public class ExperienceController {
     }
 
     // Endpoint to update an Experience
-    @PutMapping("/update")
+    @PutMapping("/update-experience")
     public String updateExperience(@RequestParam Long id, @ModelAttribute Experience experience, Model model) {
         Response response = experienceModel.update(id, experience);
         model.addAttribute("response", response);
@@ -47,7 +47,7 @@ public class ExperienceController {
     }
 
     // Endpoint to delete an Experience
-    @DeleteMapping("/delete")
+    @DeleteMapping("/delete-experience")
     public String deleteExperience(@RequestParam Long id, Model model) {
         experienceModel.delete(id);
         model.addAttribute("message", "Experience deleted successfully");
@@ -55,7 +55,7 @@ public class ExperienceController {
     }
 
     // Endpoint to get Experience by ID
-    @GetMapping("/getById")
+    @GetMapping("/getById-experience")
     public String getExperienceById(@RequestParam Long id, Model model) {
         Optional<Experience> experience = experienceModel.getById(id);
         model.addAttribute("experience", experience.orElse(null));
@@ -63,7 +63,7 @@ public class ExperienceController {
     }
 
     // Endpoint to get all Experiences
-    @GetMapping("/getAll")
+    @GetMapping("/getAll-experience")
     public String getAllExperiences(Model model) {
         List<Experience> experiences = experienceModel.getAll();
         model.addAttribute("experiences", experiences);
@@ -71,7 +71,7 @@ public class ExperienceController {
     }
 
     // Endpoint to get Experiences by Candidate ID
-    @GetMapping("/getByCandidateId")
+    @GetMapping("/getByCandidateId-experience")
     public String getByCandidateId(@RequestParam Long candidateId, Model model) {
         List<Experience> experiences = experienceModel.getByCandidateId(candidateId);
         model.addAttribute("experiences", experiences);
@@ -79,7 +79,7 @@ public class ExperienceController {
     }
 
     // Endpoint to get Experiences by Company Name
-    @GetMapping("/getByCompanyName")
+    @GetMapping("/getByCompanyName-experience")
     public String getByCompanyName(@RequestParam String companyName, Model model) {
         List<Experience> experiences = experienceModel.getByCompanyName(companyName);
         model.addAttribute("experiences", experiences);
@@ -87,7 +87,7 @@ public class ExperienceController {
     }
 
     // Endpoint to get Experiences by Role
-    @GetMapping("/getByRole")
+    @GetMapping("/getByRole-experience")
     public String getByRole(@RequestParam String role, Model model) {
         List<Experience> experiences = experienceModel.getByRole(role);
         model.addAttribute("experiences", experiences);
@@ -95,7 +95,7 @@ public class ExperienceController {
     }
 
     // Endpoint to get Experiences by Company and Role
-    @GetMapping("/getByCompanyAndRole")
+    @GetMapping("/getByCompanyAndRole-experience")
     public String getByCompanyAndRole(@RequestParam String companyName, @RequestParam String role, Model model) {
         List<Experience> experiences = experienceModel.getByCompanyAndRole(companyName, role);
         model.addAttribute("experiences", experiences);

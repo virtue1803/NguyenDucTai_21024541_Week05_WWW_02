@@ -67,7 +67,7 @@ public class CandidateSkillService implements IServices<CandidateSkill, Candidat
 
     // Tìm kỹ năng của ứng viên theo ID ứng viên
     public List<CandidateSkill> findByCandidateId(Long candidateId) {
-        return candidateSkillRepository.findByCandidateId(candidateId);
+        return candidateSkillRepository.findById_Candidate_Id(candidateId);
     }
 
     // Tìm kỹ năng của ứng viên theo trình độ kỹ năng (SkillLevel)

@@ -25,7 +25,7 @@ public class AddressController {
     }
 
     // Phương thức thêm một Address
-    @GetMapping("/insert")
+    @GetMapping("/insert-address")
     public String insertAddress(Address address, Model model) {
         Response response = addressModel.insert(address);
         model.addAttribute("response", response);
@@ -33,7 +33,7 @@ public class AddressController {
     }
 
     // Phương thức thêm nhiều Address
-    @GetMapping("/insertAll")
+    @GetMapping("/insertAll-address")
     public String insertAllAddresses(@RequestParam List<Address> addresses, Model model) {
         Response response = addressModel.insertAll(addresses);
         model.addAttribute("response", response);
@@ -41,7 +41,7 @@ public class AddressController {
     }
 
     // Phương thức cập nhật một Address
-    @GetMapping("/update")
+    @GetMapping("/update-address")
     public String updateAddress(@RequestParam Long id, Address address, Model model) {
         Response response = addressModel.update(id, address);
         model.addAttribute("response", response);
@@ -49,7 +49,7 @@ public class AddressController {
     }
 
     // Phương thức xóa một Address
-    @GetMapping("/delete")
+    @GetMapping("/delete-address")
     public String deleteAddress(@RequestParam Long id, Model model) {
         Response response = addressModel.delete(id);
         model.addAttribute("message", "Address deleted successfully");
@@ -57,7 +57,7 @@ public class AddressController {
     }
 
     // Phương thức lấy Address theo ID
-    @GetMapping("/getById")
+    @GetMapping("/getById-address")
     public String getAddressById(@RequestParam Long id, Model model) {
         Optional<Address> address = addressModel.getById(id);
         model.addAttribute("address", address.orElse(null)); // Returns null if not present
@@ -65,7 +65,7 @@ public class AddressController {
     }
 
     // Phương thức lấy tất cả các Address
-    @GetMapping("/getAll")
+    @GetMapping("/getAll-address")
     public String getAllAddresses(Model model) {
         List<Address> addresses = addressModel.getAll();
         model.addAttribute("addresses", addresses);
@@ -73,7 +73,7 @@ public class AddressController {
     }
 
     // Tìm kiếm Address theo thành phố
-    @GetMapping("/findByCity")
+    @GetMapping("/findByCity-address")
     public String findByCity(@RequestParam String city, Model model) {
         List<Address> addresses = addressModel.findByCity(city);
         model.addAttribute("addresses", addresses);
@@ -81,7 +81,7 @@ public class AddressController {
     }
 
     // Tìm kiếm Address theo quốc gia
-    @GetMapping("/findByCountry")
+    @GetMapping("/findByCountry-address")
     public String findByCountry(@RequestParam String country, Model model) {
         List<Address> addresses = addressModel.findByCountry(country);
         model.addAttribute("addresses", addresses);
@@ -89,7 +89,7 @@ public class AddressController {
     }
 
     // Tìm kiếm Address theo đường phố
-    @GetMapping("/findByStreet")
+    @GetMapping("/findByStreet-address")
     public String findByStreet(@RequestParam String street, Model model) {
         List<Address> addresses = addressModel.findByStreet(street);
         model.addAttribute("addresses", addresses);

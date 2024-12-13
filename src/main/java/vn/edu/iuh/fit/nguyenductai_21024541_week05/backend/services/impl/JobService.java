@@ -73,7 +73,7 @@ public class JobService implements IServices<Job, Long> {
 
     // Tìm công việc theo tên công ty
     public List<Job> findByCompanyName(String companyName) {
-        return jobRepository.findByCompanyName(companyName);
+        return jobRepository.findByCompany_CompName(companyName);
     }
 
     // Tìm công việc theo mô tả

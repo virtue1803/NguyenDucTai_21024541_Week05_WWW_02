@@ -25,7 +25,7 @@ public class JobSkillController {
     }
 
     // Endpoint to add a single JobSkill
-    @PostMapping("/insert")
+    @PostMapping("/insert-jobskill")
     public String insertJobSkill(@ModelAttribute JobSkill jobSkill, Model model) {
         Response response = jobSkillModel.insert(jobSkill);
         model.addAttribute("response", response);
@@ -33,7 +33,7 @@ public class JobSkillController {
     }
 
     // Endpoint to add multiple JobSkills
-    @PostMapping("/insertAll")
+    @PostMapping("/insertAll-jobskill")
     public String insertAllJobSkills(@ModelAttribute List<JobSkill> jobSkills, Model model) {
         Response response = jobSkillModel.insertAll(jobSkills);
         model.addAttribute("response", response);
@@ -41,7 +41,7 @@ public class JobSkillController {
     }
 
     // Endpoint to update a JobSkill
-    @PutMapping("/update")
+    @PutMapping("/update-jobskill")
     public String updateJobSkill(@ModelAttribute JobSkillId id, @ModelAttribute JobSkill jobSkill, Model model) {
         Response response = jobSkillModel.update(id, jobSkill);
         model.addAttribute("response", response);
@@ -49,7 +49,7 @@ public class JobSkillController {
     }
 
     // Endpoint to delete a JobSkill
-    @DeleteMapping("/delete")
+    @DeleteMapping("/delete-jobskill")
     public String deleteJobSkill(@ModelAttribute JobSkillId id, Model model) {
         jobSkillModel.delete(id);
         model.addAttribute("message", "Job Skill deleted successfully");
@@ -57,7 +57,7 @@ public class JobSkillController {
     }
 
     // Endpoint to get a JobSkill by ID
-    @GetMapping("/getById")
+    @GetMapping("/getById-jobskill")
     public String getJobSkillById(@ModelAttribute JobSkillId id, Model model) {
         Optional<JobSkill> jobSkill = jobSkillModel.getById(id);
         model.addAttribute("jobSkill", jobSkill.orElse(null));
@@ -65,7 +65,7 @@ public class JobSkillController {
     }
 
     // Endpoint to get all JobSkills
-    @GetMapping("/getAll")
+    @GetMapping("/getAll-jobskill")
     public String getAllJobSkills(Model model) {
         List<JobSkill> jobSkills = jobSkillModel.getAll();
         model.addAttribute("jobSkills", jobSkills);
@@ -73,7 +73,7 @@ public class JobSkillController {
     }
 
     // Endpoint to get JobSkills by Skill ID
-    @GetMapping("/getBySkillId")
+    @GetMapping("/getBySkillId-jobskill")
     public String getJobSkillsBySkillId(@RequestParam Long skillId, Model model) {
         List<JobSkill> jobSkills = jobSkillModel.getBySkillId(skillId);
         model.addAttribute("jobSkills", jobSkills);
@@ -81,7 +81,7 @@ public class JobSkillController {
     }
 
     // Endpoint to get JobSkills by Job ID
-    @GetMapping("/getByJobId")
+    @GetMapping("/getByJobId-jobskill")
     public String getJobSkillsByJobId(@RequestParam Long jobId, Model model) {
         List<JobSkill> jobSkills = jobSkillModel.getByJobId(jobId);
         model.addAttribute("jobSkills", jobSkills);
@@ -89,7 +89,7 @@ public class JobSkillController {
     }
 
     // Endpoint to get JobSkills by Skill Level
-    @GetMapping("/getBySkillLevel")
+    @GetMapping("/getBySkillLevel-jobskill")
     public String getJobSkillsBySkillLevel(@RequestParam SkillLevel skillLevel, Model model) {
         List<JobSkill> jobSkills = jobSkillModel.getBySkillLevel(skillLevel);
         model.addAttribute("jobSkills", jobSkills);

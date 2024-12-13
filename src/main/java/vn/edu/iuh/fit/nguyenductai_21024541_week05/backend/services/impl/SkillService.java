@@ -74,6 +74,6 @@ public class SkillService implements IServices<Skill, Long> {
 
     // Tìm kiếm kỹ năng theo loại
     public List<Skill> findBySkillType(SkillType skillType) {
-        return skillRepository.findBySkillType(skillType);
+        return skillRepository.findByType(skillType);
     }
 }

@@ -25,7 +25,7 @@ public class CandidateSkillController {
     }
 
     // Endpoint to add a single CandidateSkill
-    @PostMapping("/insert")
+    @PostMapping("/insert-candidateskill")
     public String insertCandidateSkill(@ModelAttribute CandidateSkill candidateSkill, Model model) {
         Response response = candidateSkillModel.insert(candidateSkill);
         model.addAttribute("response", response);
@@ -33,7 +33,7 @@ public class CandidateSkillController {
     }
 
     // Endpoint to add multiple CandidateSkills
-    @PostMapping("/insertAll")
+    @PostMapping("/insertAll-candidateskill")
     public String insertAllCandidateSkills(@ModelAttribute List<CandidateSkill> candidateSkills, Model model) {
         Response response = candidateSkillModel.insertAll(candidateSkills);
         model.addAttribute("response", response);
@@ -41,7 +41,7 @@ public class CandidateSkillController {
     }
 
     // Endpoint to update a CandidateSkill
-    @PutMapping("/update")
+    @PutMapping("/update-candidateskill")
     public String updateCandidateSkill(@RequestParam CandidateSkillId id, @ModelAttribute CandidateSkill candidateSkill, Model model) {
         Response response = candidateSkillModel.update(id, candidateSkill);
         model.addAttribute("response", response);
@@ -49,7 +49,7 @@ public class CandidateSkillController {
     }
 
     // Endpoint to delete a CandidateSkill
-    @DeleteMapping("/delete")
+    @DeleteMapping("/delete-candidateskill")
     public String deleteCandidateSkill(@RequestParam CandidateSkillId id, Model model) {
         candidateSkillModel.delete(id);
         model.addAttribute("message", "Candidate skill deleted successfully");
@@ -57,7 +57,7 @@ public class CandidateSkillController {
     }
 
     // Endpoint to get CandidateSkill by ID
-    @GetMapping("/getById")
+    @GetMapping("/getById-candidateskill")
     public String getCandidateSkillById(@RequestParam CandidateSkillId id, Model model) {
         Optional<CandidateSkill> candidateSkill = candidateSkillModel.getById(id);
         model.addAttribute("candidateSkill", candidateSkill.orElse(null));
@@ -65,7 +65,7 @@ public class CandidateSkillController {
     }
 
     // Endpoint to get all CandidateSkills
-    @GetMapping("/getAll")
+    @GetMapping("/getAll-candidateskill")
     public String getAllCandidateSkills(Model model) {
         List<CandidateSkill> candidateSkills = candidateSkillModel.getAll();
         model.addAttribute("candidateSkills", candidateSkills);
@@ -73,7 +73,7 @@ public class CandidateSkillController {
     }
 
     // Endpoint to get CandidateSkills by CandidateId
-    @GetMapping("/getSkillsByCandidateId")
+    @GetMapping("/getSkillsByCandidateId-candidateskill")
     public String getSkillsByCandidateId(@RequestParam Long candidateId, Model model) {
         List<CandidateSkill> candidateSkills = candidateSkillModel.getSkillsByCandidateId(candidateId);
         model.addAttribute("candidateSkills", candidateSkills);
@@ -81,7 +81,7 @@ public class CandidateSkillController {
     }
 
     // Endpoint to get CandidateSkills by SkillLevel
-    @GetMapping("/getSkillsByLevel")
+    @GetMapping("/getSkillsByLevel-candidateskill")
     public String getSkillsByLevel(@RequestParam SkillLevel skillLevel, Model model) {
         List<CandidateSkill> candidateSkills = candidateSkillModel.getSkillsByLevel(skillLevel);
         model.addAttribute("candidateSkills", candidateSkills);

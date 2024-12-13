@@ -73,6 +73,6 @@ public class JobSkillService implements IServices<JobSkill, JobSkillId> {
 
     // Tìm kỹ năng yêu cầu cho công việc theo JobId
     public List<JobSkill> findByJobId(Long jobId) {
-        return jobSkillRepository.findByJobId(jobId);
+        return jobSkillRepository.findById_Job_Id(jobId);
     }
 }

@@ -1,6 +1,7 @@
 package vn.edu.iuh.fit.nguyenductai_21024541_week05.frontend.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -23,74 +24,124 @@ public class JobController {
     }
 
     // Endpoint to add a single Job
-    @PostMapping("/insert")
+    @PostMapping("/insert-job")
     public String insertJob(@ModelAttribute Job job, Model model) {
-        Response response = jobModel.insert(job);
-        model.addAttribute("response", response);
-        return "job_response"; // View to display the result
+        try {
+            Response response = jobModel.insert(job);
+            model.addAttribute("response", response);
+            return "job_response"; // View to display the result
+        } catch (Exception e) {
+            model.addAttribute("error", "Error occurred while adding the job: " + e.getMessage());
+            return "error"; // Error view
+        }
     }
 
     // Endpoint to add multiple Jobs
-    @PostMapping("/insertAll")
+    @PostMapping("/insertAll-job")
     public String insertAllJobs(@ModelAttribute List<Job> jobs, Model model) {
-        Response response = jobModel.insertAll(jobs);
-        model.addAttribute("response", response);
-        return "job_response"; // View to display the result
+        try {
+            Response response = jobModel.insertAll(jobs);
+            model.addAttribute("response", response);
+            return "job_response"; // View to display the result
+        } catch (Exception e) {
+            model.addAttribute("error", "Error occurred while adding jobs: " + e.getMessage());
+            return "error"; // Error view
+        }
     }
 
     // Endpoint to update a Job
-    @PutMapping("/update")
+    @PutMapping("/update-job")
     public String updateJob(@RequestParam Long id, @ModelAttribute Job job, Model model) {
-        Response response = jobModel.update(id, job);
-        model.addAttribute("response", response);
-        return "job_response"; // View to display the result
+        try {
+            Response response = jobModel.update(id, job);
+            model.addAttribute("response", response);
+            return "job_response"; // View to display the result
+        } catch (Exception e) {
+            model.addAttribute("error", "Error occurred while updating the job: " + e.getMessage());
+            return "error"; // Error view
+        }
     }
 
     // Endpoint to delete a Job
-    @DeleteMapping("/delete")
+    @DeleteMapping("/delete-job")
     public String deleteJob(@RequestParam Long id, Model model) {
-        jobModel.delete(id);
-        model.addAttribute("message", "Job deleted successfully");
-        return "job_response"; // View to display the result
+        try {
+            jobModel.delete(id);
+            model.addAttribute("message", "Job deleted successfully");
+            return "job_response"; // View to display the result
+        } catch (Exception e) {
+            model.addAttribute("error", "Error occurred while deleting the job: " + e.getMessage());
+            return "error"; // Error view
+        }
     }
 
     // Endpoint to get Job by ID
-    @GetMapping("/getById")
+    @GetMapping("/getById-job")
     public String getJobById(@RequestParam Long id, Model model) {
-        Optional<Job> job = jobModel.getById(id);
-        model.addAttribute("job", job.orElse(null));
-        return "job_details"; // View to display job details
+        try {
+            Optional<Job> job = jobModel.getById(id);
+            if (job.isPresent()) {
+                model.addAttribute("job", job.get());
+                return "job_details"; // View to display job details
+            } else {
+                model.addAttribute("error", "Job not found with ID: " + id);
+                return "error"; // Error view
+            }
+        } catch (Exception e) {
+            model.addAttribute("error", "Error occurred while retrieving the job: " + e.getMessage());
+            return "error"; // Error view
+        }
     }
 
     // Endpoint to get all Jobs
-    @GetMapping("/getAll")
+    @GetMapping("/getAll-job")
     public String getAllJobs(Model model) {
-        List<Job> jobs = jobModel.getAll();
-        model.addAttribute("jobs", jobs);
-        return "jobs_list"; // View to display all jobs
+        try {
+            List<Job> jobs = jobModel.getAll();
+            model.addAttribute("jobs", jobs);
+            return "jobs_list"; // View to display all jobs
+        } catch (Exception e) {
+            model.addAttribute("error", "Error occurred while fetching jobs: " + e.getMessage());
+            return "error"; // Error view
+        }
     }
 
     // Endpoint to get Jobs by Job Name
-    @GetMapping("/findByJobName")
+    @GetMapping("/findByJobName-job")
     public String findByJobName(@RequestParam String jobName, Model model) {
-        List<Job> jobs = jobModel.findByJobName(jobName);
-        model.addAttribute("jobs", jobs);
-        return "jobs_list"; // View to display jobs by job name
+        try {
+            List<Job> jobs = jobModel.findByJobName(jobName);
+            model.addAttribute("jobs", jobs);
+            return "jobs_list"; // View to display jobs by job name
+        } catch (Exception e) {
+            model.addAttribute("error", "Error occurred while searching jobs by name: " + e.getMessage());
+            return "error"; // Error view
+        }
     }
 
     // Endpoint to get Jobs by Company Name
-    @GetMapping("/findByCompanyName")
+    @GetMapping("/findByCompanyName-job")
     public String findByCompanyName(@RequestParam String companyName, Model model) {
-        List<Job> jobs = jobModel.findByCompanyName(companyName);
-        model.addAttribute("jobs", jobs);
-        return "jobs_list"; // View to display jobs by company name
+        try {
+            List<Job> jobs = jobModel.findByCompanyName(companyName);
+            model.addAttribute("jobs", jobs);
+            return "jobs_list"; // View to display jobs by company name
+        } catch (Exception e) {
+            model.addAttribute("error", "Error occurred while searching jobs by company name: " + e.getMessage());
+            return "error"; // Error view
+        }
     }
 
     // Endpoint to get Jobs by Job Description
-    @GetMapping("/findByJobDesc")
+    @GetMapping("/findByJobDesc-job")
     public String findByJobDesc(@RequestParam String jobDesc, Model model) {
-        List<Job> jobs = jobModel.findByJobDesc(jobDesc);
-        model.addAttribute("jobs", jobs);
-        return "jobs_list"; // View to display jobs by job description
+        try {
+            List<Job> jobs = jobModel.findByJobDesc(jobDesc);
+            model.addAttribute("jobs", jobs);
+            return "jobs_list"; // View to display jobs by job description
+        } catch (Exception e) {
+            model.addAttribute("error", "Error occurred while searching jobs by description: " + e.getMessage());
+            return "error"; // Error view
+        }
     }
 }

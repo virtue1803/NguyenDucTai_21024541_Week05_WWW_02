@@ -18,7 +18,7 @@ public interface CandidateRepository extends JpaRepository<Candidate, Long> {
     Optional<Candidate> findById(Long id);
 
     // Tìm ứng viên theo tên (nếu cần)
-    List<Candidate> findByNameContainingIgnoreCase(String name);
+    List<Candidate> findByFullNameContainingIgnoreCase(String fullName);
 
     // Tìm ứng viên theo ngày sinh (nếu cần)
     List<Candidate> findByDobBetween(LocalDate startDate, LocalDate endDate);

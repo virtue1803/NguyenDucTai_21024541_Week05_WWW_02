@@ -23,7 +23,7 @@ public class CompanyController {
     }
 
     // Endpoint to add a single Company
-    @PostMapping("/insert")
+    @PostMapping("/insert-company")
     public String insertCompany(@ModelAttribute Company company, Model model) {
         Response response = companyModel.insert(company);
         model.addAttribute("response", response);
@@ -31,7 +31,7 @@ public class CompanyController {
     }
 
     // Endpoint to add multiple Companies
-    @PostMapping("/insertAll")
+    @PostMapping("/insertAll-company")
     public String insertAllCompanies(@ModelAttribute List<Company> companies, Model model) {
         Response response = companyModel.insertAll(companies);
         model.addAttribute("response", response);
@@ -39,7 +39,7 @@ public class CompanyController {
     }
 
     // Endpoint to update a Company
-    @PutMapping("/update")
+    @PutMapping("/update-company")
     public String updateCompany(@RequestParam Long id, @ModelAttribute Company company, Model model) {
         Response response = companyModel.update(id, company);
         model.addAttribute("response", response);
@@ -47,7 +47,7 @@ public class CompanyController {
     }
 
     // Endpoint to delete a Company
-    @DeleteMapping("/delete")
+    @DeleteMapping("/delete-company")
     public String deleteCompany(@RequestParam Long id, Model model) {
         companyModel.delete(id);
         model.addAttribute("message", "Company deleted successfully");
@@ -55,7 +55,7 @@ public class CompanyController {
     }
 
     // Endpoint to get Company by ID
-    @GetMapping("/getById")
+    @GetMapping("/getById-company")
     public String getCompanyById(@RequestParam Long id, Model model) {
         Optional<Company> company = companyModel.getById(id);
         model.addAttribute("company", company.orElse(null));
@@ -63,7 +63,7 @@ public class CompanyController {
     }
 
     // Endpoint to get all Companies
-    @GetMapping("/getAll")
+    @GetMapping("/getAll-company")
     public String getAllCompanies(Model model) {
         List<Company> companies = companyModel.getAll();
         model.addAttribute("companies", companies);
@@ -71,7 +71,7 @@ public class CompanyController {
     }
 
     // Endpoint to find Company by name
-    @GetMapping("/findByName")
+    @GetMapping("/findByName-company")
     public String findCompanyByName(@RequestParam String name, Model model) {
         List<Company> companies = companyModel.findByCompName(name);
         model.addAttribute("companies", companies);
@@ -79,7 +79,7 @@ public class CompanyController {
     }
 
     // Endpoint to find Company by email
-    @GetMapping("/findByEmail")
+    @GetMapping("/findByEmail-company")
     public String findCompanyByEmail(@RequestParam String email, Model model) {
         Optional<Company> company = companyModel.findByEmail(email);
         model.addAttribute("company", company.orElse(null));

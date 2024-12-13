@@ -27,7 +27,7 @@ public class CandidateController {
     }
 
     // Phương thức thêm một Candidate
-    @GetMapping("/insert")
+    @GetMapping("/insert-candidate")
     public String insertCandidate(Candidate candidate, Model model) {
         Response response = candidateModel.insert(candidate);
         model.addAttribute("response", response);
@@ -35,7 +35,7 @@ public class CandidateController {
     }
 
     // Phương thức thêm nhiều Candidate
-    @GetMapping("/insertAll")
+    @GetMapping("/insertAll-candidate")
     public String insertAllCandidates(List<Candidate> candidates, Model model) {
         Response response = candidateModel.insertAll(candidates);
         model.addAttribute("response", response);
@@ -43,7 +43,7 @@ public class CandidateController {
     }
 
     // Phương thức cập nhật một Candidate
-    @GetMapping("/update")
+    @GetMapping("/update-candidate")
     public String updateCandidate(@RequestParam Long id, Candidate candidate, Model model) {
         Response response = candidateModel.update(id, candidate);
         model.addAttribute("response", response);
@@ -51,7 +51,7 @@ public class CandidateController {
     }
 
     // Phương thức xóa một Candidate
-    @GetMapping("/delete")
+    @GetMapping("/delete-candidate")
     public String deleteCandidate(@RequestParam Long id, Model model) {
         candidateModel.delete(id);
         model.addAttribute("message", "Candidate deleted successfully");
@@ -59,7 +59,7 @@ public class CandidateController {
     }
 
     // Phương thức lấy Candidate theo ID
-    @GetMapping("/getById")
+    @GetMapping("/getById-candidate")
     public String getCandidateById(@RequestParam Long id, Model model) {
         Optional<Candidate> candidate = candidateModel.getById(id);
         model.addAttribute("candidate", candidate.orElse(null));
@@ -67,7 +67,7 @@ public class CandidateController {
     }
 
     // Phương thức lấy tất cả Candidate
-    @GetMapping("/getAll")
+    @GetMapping("/getAll-candidate")
     public String getAllCandidates(Model model) {
         List<Candidate> candidates = candidateModel.getAll();
         model.addAttribute("candidates", candidates);
@@ -75,7 +75,7 @@ public class CandidateController {
     }
 
     // Tìm kiếm Candidate theo email và password
-    @GetMapping("/search/login")
+    @GetMapping("/search/login-candidate")
     public String findByEmailAndPassword(
             @RequestParam("email") String email,
             @RequestParam("password") String password,
@@ -90,7 +90,7 @@ public class CandidateController {
     }
 
     // Tìm kiếm Candidate theo vai trò
-    @GetMapping("/findByRole")
+    @GetMapping("/findByRole-candidate")
     public String findByRole(@RequestParam CandidateRole role, Model model) {
         List<Candidate> candidates = candidateModel.findByRole(role);
         model.addAttribute("candidates", candidates);
@@ -98,7 +98,7 @@ public class CandidateController {
     }
 
     // Tìm kiếm Candidate theo tên
-    @GetMapping("/findByName")
+    @GetMapping("/findByName-candidate")
     public String findByNameContainingIgnoreCase(@RequestParam String name, Model model) {
         List<Candidate> candidates = candidateModel.findByNameContainingIgnoreCase(name);
         model.addAttribute("candidates", candidates);
@@ -106,7 +106,7 @@ public class CandidateController {
     }
 
     // Tìm kiếm Candidate theo ngày sinh
-    @GetMapping("/findByDobBetween")
+    @GetMapping("/findByDobBetween-candidate")
     public String findByDobBetween(
             @RequestParam LocalDate startDate,
             @RequestParam LocalDate endDate,

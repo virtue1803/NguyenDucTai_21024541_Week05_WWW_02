@@ -10,7 +10,9 @@ import java.util.List;
 @Repository
 public interface CandidateSkillRepository extends JpaRepository<CandidateSkill, CandidateSkillId> {
     // Tìm kỹ năng của ứng viên theo ID ứng viên
-    List<CandidateSkill> findByCandidateId(Long candidateId);
+    List<CandidateSkill> findById_Candidate_Id(Long candidateId);
     // Tìm kỹ năng của ứng viên theo mức độ kỹ năng
     List<CandidateSkill> findBySkillLevel(SkillLevel skillLevel);
+
+
 }

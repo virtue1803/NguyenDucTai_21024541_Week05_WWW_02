@@ -23,7 +23,7 @@ public class Address {
     private String city;
 
     @Column(name = "country")
-    private Short country;
+    private String country;
 
     @Column(name = "number", length = 20)
     private String number;

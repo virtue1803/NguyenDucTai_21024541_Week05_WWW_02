@@ -71,7 +71,7 @@ public class CandidateService implements IServices<Candidate, Long> {
 
     // Tìm ứng viên theo tên
     public List<Candidate> findByNameContainingIgnoreCase(String name) {
-        return candidateRepository.findByNameContainingIgnoreCase(name);
+        return candidateRepository.findByFullNameContainingIgnoreCase(name);
     }
 
     // Tìm ứng viên theo ngày sinh trong khoảng thời gian

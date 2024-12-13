@@ -14,5 +14,9 @@ public interface JobSkillRepository extends JpaRepository<JobSkill, JobSkillId> 
     List<JobSkill> findBySkillLevel(SkillLevel skillLevel);
 
     // Tìm kỹ năng theo công việc (job)
-    List<JobSkill> findByJobId(Long jobId);
+    List<JobSkill> findById_Job_Id(Long jobId);
+
+
+
+
 }

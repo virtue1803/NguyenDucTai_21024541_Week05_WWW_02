@@ -24,7 +24,7 @@ public class SkillController {
     }
 
     // Endpoint to add a single Skill
-    @PostMapping("/insert")
+    @PostMapping("/insert-skill")
     public String insertSkill(@ModelAttribute Skill skill, Model model) {
         Response response = skillModel.insert(skill);
         model.addAttribute("response", response);
@@ -32,7 +32,7 @@ public class SkillController {
     }
 
     // Endpoint to add multiple Skills
-    @PostMapping("/insertAll")
+    @PostMapping("/insertAll-skill")
     public String insertAllSkills(@ModelAttribute List<Skill> skills, Model model) {
         Response response = skillModel.insertAll(skills);
         model.addAttribute("response", response);
@@ -40,7 +40,7 @@ public class SkillController {
     }
 
     // Endpoint to update a Skill
-    @PutMapping("/update")
+    @PutMapping("/update-skill")
     public String updateSkill(@RequestParam Long id, @ModelAttribute Skill skill, Model model) {
         Response response = skillModel.update(id, skill);
         model.addAttribute("response", response);
@@ -48,7 +48,7 @@ public class SkillController {
     }
 
     // Endpoint to delete a Skill
-    @DeleteMapping("/delete")
+    @DeleteMapping("/delete-skill")
     public String deleteSkill(@RequestParam Long id, Model model) {
         skillModel.delete(id);
         model.addAttribute("message", "Skill deleted successfully");
@@ -56,7 +56,7 @@ public class SkillController {
     }
 
     // Endpoint to get a Skill by ID
-    @GetMapping("/getById")
+    @GetMapping("/getById-skill")
     public String getSkillById(@RequestParam Long id, Model model) {
         Optional<Skill> skill = skillModel.getById(id);
         model.addAttribute("skill", skill.orElse(null));
@@ -64,7 +64,7 @@ public class SkillController {
     }
 
     // Endpoint to get all Skills
-    @GetMapping("/getAll")
+    @GetMapping("/getAll-skill")
     public String getAllSkills(Model model) {
         List<Skill> skills = skillModel.getAll();
         model.addAttribute("skills", skills);
@@ -72,7 +72,7 @@ public class SkillController {
     }
 
     // Endpoint to search Skills by name (case insensitive)
-    @GetMapping("/searchByName")
+    @GetMapping("/searchByName-skill")
     public String getSkillsByName(@RequestParam String skillName, Model model) {
         List<Skill> skills = skillModel.getSkillsByName(skillName);
         model.addAttribute("skills", skills);
@@ -80,7 +80,7 @@ public class SkillController {
     }
 
     // Endpoint to search Skills by type
-    @GetMapping("/searchByType")
+    @GetMapping("/searchByType-skill")
     public String getSkillsByType(@RequestParam SkillType skillType, Model model) {
         List<Skill> skills = skillModel.getSkillsByType(skillType);
         model.addAttribute("skills", skills);
