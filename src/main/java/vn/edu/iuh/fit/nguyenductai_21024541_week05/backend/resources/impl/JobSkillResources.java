@@ -12,7 +12,6 @@ import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.resources.IResources;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.services.impl.JobSkillService;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.JobSkill;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.exceptions.EntityIdNotFoundException;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -31,8 +30,8 @@ public class JobSkillResources implements IResources<JobSkill, JobSkillId> {
     public ResponseEntity<Response> insert(@RequestBody JobSkill jobSkill) {
         try {
             JobSkill savedJobSkill = jobSkillService.add(jobSkill);
-            Response response = new Response(200, "Job Skill added successfully", savedJobSkill);
-            return ResponseEntity.ok(response);
+            Response response = new Response(201, "Job Skill added successfully", savedJobSkill);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (Exception e) {
             log.error("Error inserting JobSkill: ", e);
             Response response = new Response(500, "Internal Server Error", null);
@@ -46,8 +45,8 @@ public class JobSkillResources implements IResources<JobSkill, JobSkillId> {
     public ResponseEntity<Response> insertAll(@RequestBody List<JobSkill> jobSkills) {
         try {
             List<JobSkill> savedJobSkills = jobSkillService.addMany(jobSkills);
-            Response response = new Response(200, "Job Skills added successfully", savedJobSkills);
-            return ResponseEntity.ok(response);
+            Response response = new Response(201, "Job Skills added successfully", savedJobSkills);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (Exception e) {
             log.error("Error inserting multiple JobSkills: ", e);
             Response response = new Response(500, "Internal Server Error", null);
@@ -117,14 +116,14 @@ public class JobSkillResources implements IResources<JobSkill, JobSkillId> {
     @GetMapping
     public ResponseEntity<Response> getAll() {
         try {
-            // Lấy Iterator từ service
+            // Get Iterator from service
             Iterator<JobSkill> jobSkillIterator = jobSkillService.getAll();
 
-            // Chuyển Iterator thành List
+            // Convert Iterator to List
             List<JobSkill> jobSkills = new ArrayList<>();
             jobSkillIterator.forEachRemaining(jobSkills::add);
 
-            // Tạo response với dữ liệu đã chuyển đổi
+            // Create response with converted data
             Response response = new Response(200, "Job Skills retrieved successfully", jobSkills);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -133,7 +132,6 @@ public class JobSkillResources implements IResources<JobSkill, JobSkillId> {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
-
 
     // Find JobSkills by Skill ID
     @GetMapping("/by-skill/{skillId}")

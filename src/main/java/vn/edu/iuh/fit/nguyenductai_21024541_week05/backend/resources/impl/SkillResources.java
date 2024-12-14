@@ -23,6 +23,7 @@ public class SkillResources implements IResources<Skill, Long> {
     @Autowired
     private SkillService skillService;
 
+    // Insert a single Skill
     @Override
     @PostMapping
     public ResponseEntity<Response> insert(@RequestBody Skill skill) {
@@ -32,6 +33,7 @@ public class SkillResources implements IResources<Skill, Long> {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    // Insert multiple Skills
     @Override
     @PostMapping("/bulk")
     public ResponseEntity<Response> insertAll(@RequestBody List<Skill> skills) {
@@ -41,11 +43,12 @@ public class SkillResources implements IResources<Skill, Long> {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    // Update Skill by ID
     @Override
     @PutMapping("/{id}")
     public ResponseEntity<Response> update(@PathVariable Long id, @RequestBody Skill skill) {
         try {
-            skill.setId(id);
+            skill.setId(id); // Ensuring we're updating the correct Skill
             Skill updatedSkill = skillService.update(skill);
             Response response = new Response(HttpStatus.OK.value(), "Skill updated successfully", updatedSkill);
             return ResponseEntity.ok(response);
@@ -56,6 +59,7 @@ public class SkillResources implements IResources<Skill, Long> {
         }
     }
 
+    // Delete Skill by ID
     @Override
     @DeleteMapping("/{id}")
     public ResponseEntity<Response> delete(@PathVariable Long id) {
@@ -70,6 +74,7 @@ public class SkillResources implements IResources<Skill, Long> {
         }
     }
 
+    // Get Skill by ID
     @Override
     @GetMapping("/{id}")
     public ResponseEntity<Response> getById(@PathVariable Long id) {
@@ -84,6 +89,7 @@ public class SkillResources implements IResources<Skill, Long> {
         }
     }
 
+    // Get all Skills
     @Override
     @GetMapping
     public ResponseEntity<Response> getAll() {
@@ -92,7 +98,7 @@ public class SkillResources implements IResources<Skill, Long> {
         return ResponseEntity.ok(response);
     }
 
-    // Tìm kiếm kỹ năng theo tên (không phân biệt hoa thường)
+    // Search Skills by Name (Case Insensitive)
     @GetMapping("/search")
     public ResponseEntity<Response> findBySkillName(@RequestParam String skillName) {
         List<Skill> skills = skillService.findBySkillName(skillName);
@@ -100,11 +106,20 @@ public class SkillResources implements IResources<Skill, Long> {
         return ResponseEntity.ok(response);
     }
 
-    // Tìm kiếm kỹ năng theo loại
+    // Search Skills by Type
     @GetMapping("/search/type")
     public ResponseEntity<Response> findBySkillType(@RequestParam SkillType skillType) {
         List<Skill> skills = skillService.findBySkillType(skillType);
         Response response = new Response(HttpStatus.OK.value(), "Skills found by type", skills);
         return ResponseEntity.ok(response);
     }
+
+//    // New method to get Skills by multiple criteria (Example: Search by Skill Type and Name)
+//    @GetMapping("/search/multiple")
+//    public ResponseEntity<Response> findByMultipleCriteria(@RequestParam(required = false) String skillName,
+//                                                           @RequestParam(required = false) SkillType skillType) {
+//        List<Skill> skills = skillService.findByMultipleCriteria(skillName, skillType);
+//        Response response = new Response(HttpStatus.OK.value(), "Skills found with criteria", skills);
+//        return ResponseEntity.ok(response);
+//    }
 }

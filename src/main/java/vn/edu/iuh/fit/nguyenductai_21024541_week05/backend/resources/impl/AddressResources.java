@@ -4,29 +4,55 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.dto.AddressDTO;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Address;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Response;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.resources.IResources;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.services.impl.AddressService;
 
+
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
 @RequestMapping("/api/addresses")
-public class AddressResources implements IResources<Address, Long> {
+public class AddressResources implements IResources<AddressDTO, Long> {
 
     @Autowired
     private AddressService addressService;
 
+    // Utility method to convert Address to AddressDTO
+    private AddressDTO convertToDTO(Address address) {
+        return new AddressDTO(
+                address.getId(),
+                address.getStreet(),
+                address.getCity(),
+                address.getCountry(),
+                address.getNumber(),
+                address.getZipcode()
+        );
+    }
+
     // Thêm một địa chỉ mới
     @Override
     @PostMapping
-    public ResponseEntity<Response> insert(@RequestBody Address address) {
+    public ResponseEntity<Response> insert(@RequestBody AddressDTO addressDTO) {
         try {
+            // Convert AddressDTO to Address before saving
+            Address address = new Address(
+                    addressDTO.getId(),
+                    addressDTO.getStreet(),
+                    addressDTO.getCity(),
+                    addressDTO.getCountry(),
+                    addressDTO.getNumber(),
+                    addressDTO.getZipcode()
+            );
             Address savedAddress = addressService.add(address);
-            return ResponseEntity.ok(new Response(200, "Address added successfully", savedAddress));
+            AddressDTO savedAddressDTO = convertToDTO(savedAddress);
+            return ResponseEntity.ok(new Response(200, "Address added successfully", savedAddressDTO));
         } catch (Exception e) {
             log.error("Error adding address: {}", e.getMessage());
             return ResponseEntity.status(500).body(new Response(500, "Error adding address", null));
@@ -36,10 +62,23 @@ public class AddressResources implements IResources<Address, Long> {
     // Thêm nhiều địa chỉ
     @Override
     @PostMapping("/bulk")
-    public ResponseEntity<Response> insertAll(@RequestBody List<Address> addresses) {
+    public ResponseEntity<Response> insertAll(@RequestBody List<AddressDTO> addressDTOs) {
         try {
+            List<Address> addresses = addressDTOs.stream().map(dto -> new Address(
+                    dto.getId(),
+                    dto.getStreet(),
+                    dto.getCity(),
+                    dto.getCountry(),
+                    dto.getNumber(),
+                    dto.getZipcode()
+            )).collect(Collectors.toList());
+
             List<Address> savedAddresses = addressService.addMany(addresses);
-            return ResponseEntity.ok(new Response(200, "Addresses added successfully", savedAddresses));
+            List<AddressDTO> savedAddressesDTO = savedAddresses.stream()
+                    .map(this::convertToDTO)
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(new Response(200, "Addresses added successfully", savedAddressesDTO));
         } catch (Exception e) {
             log.error("Error adding addresses: {}", e.getMessage());
             return ResponseEntity.status(500).body(new Response(500, "Error adding addresses", null));
@@ -49,11 +88,20 @@ public class AddressResources implements IResources<Address, Long> {
     // Cập nhật một địa chỉ
     @Override
     @PutMapping("/{id}")
-    public ResponseEntity<Response> update(@PathVariable Long id, @RequestBody Address address) {
+    public ResponseEntity<Response> update(@PathVariable Long id, @RequestBody AddressDTO addressDTO) {
         try {
-            address.setId(id);
+            // Convert AddressDTO to Address before updating
+            Address address = new Address(
+                    id,
+                    addressDTO.getStreet(),
+                    addressDTO.getCity(),
+                    addressDTO.getCountry(),
+                    addressDTO.getNumber(),
+                    addressDTO.getZipcode()
+            );
             Address updatedAddress = addressService.update(address);
-            return ResponseEntity.ok(new Response(200, "Address updated successfully", updatedAddress));
+            AddressDTO updatedAddressDTO = convertToDTO(updatedAddress);
+            return ResponseEntity.ok(new Response(200, "Address updated successfully", updatedAddressDTO));
         } catch (Exception e) {
             log.error("Error updating address: {}", e.getMessage());
             return ResponseEntity.status(500).body(new Response(500, "Error updating address", null));
@@ -82,7 +130,8 @@ public class AddressResources implements IResources<Address, Long> {
             if (address == null) {
                 return ResponseEntity.status(404).body(new Response(404, "Address not found", null));
             }
-            return ResponseEntity.ok(new Response(200, "Address found", address));
+            AddressDTO addressDTO = convertToDTO(address);
+            return ResponseEntity.ok(new Response(200, "Address found", addressDTO));
         } catch (Exception e) {
             log.error("Error fetching address: {}", e.getMessage());
             return ResponseEntity.status(500).body(new Response(500, "Error fetching address", null));
@@ -95,31 +144,50 @@ public class AddressResources implements IResources<Address, Long> {
     public ResponseEntity<Response> getAll() {
         try {
             Iterator<Address> addresses = addressService.getAll();
-            return ResponseEntity.ok(new Response(200, "Addresses retrieved successfully", addresses));
+            // Convert Iterator to List
+            List<Address> addressList = new ArrayList<>();
+            addresses.forEachRemaining(addressList::add);
+
+            // Convert List<Address> to List<AddressDTO>
+            List<AddressDTO> addressDTOs = addressList.stream()
+                    .map(this::convertToDTO)
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(new Response(200, "Addresses retrieved successfully", addressDTOs));
         } catch (Exception e) {
             log.error("Error fetching addresses: {}", e.getMessage());
             return ResponseEntity.status(500).body(new Response(500, "Error fetching addresses", null));
         }
     }
 
+
     // Tìm kiếm địa chỉ theo thành phố
     @GetMapping("/city/{city}")
     public ResponseEntity<Response> getByCity(@PathVariable String city) {
         List<Address> addresses = addressService.findByCity(city);
-        return ResponseEntity.ok(new Response(200, "Addresses found by city", addresses));
+        List<AddressDTO> addressDTOs = addresses.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(new Response(200, "Addresses found by city", addressDTOs));
     }
 
     // Tìm kiếm địa chỉ theo quốc gia
     @GetMapping("/country/{country}")
     public ResponseEntity<Response> getByCountry(@PathVariable String country) {
         List<Address> addresses = addressService.findByCountry(country);
-        return ResponseEntity.ok(new Response(200, "Addresses found by country", addresses));
+        List<AddressDTO> addressDTOs = addresses.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(new Response(200, "Addresses found by country", addressDTOs));
     }
 
     // Tìm kiếm địa chỉ theo đường phố
     @GetMapping("/street/{street}")
     public ResponseEntity<Response> getByStreet(@PathVariable String street) {
         List<Address> addresses = addressService.findByStreet(street);
-        return ResponseEntity.ok(new Response(200, "Addresses found by street", addresses));
+        List<AddressDTO> addressDTOs = addresses.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(new Response(200, "Addresses found by street", addressDTOs));
     }
 }

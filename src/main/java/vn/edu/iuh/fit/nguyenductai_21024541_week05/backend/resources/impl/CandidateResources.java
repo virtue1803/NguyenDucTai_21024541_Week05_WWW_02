@@ -5,33 +5,66 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.dto.CandidateDTO;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.enums.CandidateRole;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Response;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Candidate;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.services.impl.CandidateService;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.resources.IResources;
 
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
 @RequestMapping("/api/candidates")
-public class CandidateResources implements IResources<Candidate, Long> {
+public class CandidateResources implements IResources<CandidateDTO, Long> {
 
     @Autowired
     private CandidateService candidateService;
 
+    // Utility method to convert Candidate to CandidateDTO
+    private CandidateDTO convertToDTO(Candidate candidate) {
+        return new CandidateDTO(
+                candidate.getId(),
+                candidate.getDob(),
+                candidate.getEmail(),
+                candidate.getFullName(),
+                candidate.getPhone(),
+                candidate.getPassword(),
+                candidate.getRole(),
+                candidate.isStatus()
+        );
+    }
+
+    // Utility method to convert CandidateDTO to Candidate
+    private Candidate convertToEntity(CandidateDTO candidateDTO) {
+        Candidate candidate = new Candidate();
+        candidate.setId(candidateDTO.getId());
+        candidate.setDob(candidateDTO.getDob());
+        candidate.setEmail(candidateDTO.getEmail());
+        candidate.setFullName(candidateDTO.getFullName());
+        candidate.setPhone(candidateDTO.getPhone());
+        candidate.setPassword(candidateDTO.getPassword());
+        candidate.setRole(candidateDTO.getRole());
+        candidate.setStatus(candidateDTO.isStatus());
+        return candidate;
+    }
+
     // Thêm ứng viên mới
     @Override
     @PostMapping
-    public ResponseEntity<Response> insert(@RequestBody Candidate candidate) {
+    public ResponseEntity<Response> insert(@RequestBody CandidateDTO candidateDTO) {
         try {
+            Candidate candidate = convertToEntity(candidateDTO);
             Candidate savedCandidate = candidateService.add(candidate);
-            Response response = new Response(HttpStatus.CREATED.value(), "Candidate created successfully", savedCandidate);
+            CandidateDTO savedCandidateDTO = convertToDTO(savedCandidate);
+            Response response = new Response(HttpStatus.CREATED.value(), "Candidate created successfully", savedCandidateDTO);
             return new ResponseEntity<>(response, HttpStatus.CREATED);
         } catch (Exception e) {
             Response response = new Response(HttpStatus.BAD_REQUEST.value(), "Failed to create candidate", null);
@@ -42,10 +75,18 @@ public class CandidateResources implements IResources<Candidate, Long> {
     // Thêm nhiều ứng viên
     @Override
     @PostMapping("/bulk")
-    public ResponseEntity<Response> insertAll(@RequestBody List<Candidate> candidates) {
+    public ResponseEntity<Response> insertAll(@RequestBody List<CandidateDTO> candidateDTOs) {
         try {
+            List<Candidate> candidates = candidateDTOs.stream()
+                    .map(this::convertToEntity)
+                    .collect(Collectors.toList());
+
             List<Candidate> savedCandidates = candidateService.addMany(candidates);
-            Response response = new Response(HttpStatus.CREATED.value(), "Candidates created successfully", savedCandidates);
+            List<CandidateDTO> savedCandidateDTOs = savedCandidates.stream()
+                    .map(this::convertToDTO)
+                    .collect(Collectors.toList());
+
+            Response response = new Response(HttpStatus.CREATED.value(), "Candidates created successfully", savedCandidateDTOs);
             return new ResponseEntity<>(response, HttpStatus.CREATED);
         } catch (Exception e) {
             Response response = new Response(HttpStatus.BAD_REQUEST.value(), "Failed to create candidates", null);
@@ -56,11 +97,13 @@ public class CandidateResources implements IResources<Candidate, Long> {
     // Cập nhật ứng viên
     @Override
     @PutMapping("/{id}")
-    public ResponseEntity<Response> update(@PathVariable Long id, @RequestBody Candidate candidate) {
+    public ResponseEntity<Response> update(@PathVariable Long id, @RequestBody CandidateDTO candidateDTO) {
         try {
-            candidate.setId(id);
+            candidateDTO.setId(id);
+            Candidate candidate = convertToEntity(candidateDTO);
             Candidate updatedCandidate = candidateService.update(candidate);
-            Response response = new Response(HttpStatus.OK.value(), "Candidate updated successfully", updatedCandidate);
+            CandidateDTO updatedCandidateDTO = convertToDTO(updatedCandidate);
+            Response response = new Response(HttpStatus.OK.value(), "Candidate updated successfully", updatedCandidateDTO);
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             Response response = new Response(HttpStatus.NOT_FOUND.value(), "Candidate not found", null);
@@ -89,7 +132,8 @@ public class CandidateResources implements IResources<Candidate, Long> {
         try {
             Optional<Candidate> candidate = candidateService.getById(id);
             if (candidate.isPresent()) {
-                Response response = new Response(HttpStatus.OK.value(), "Candidate found", candidate.get());
+                CandidateDTO candidateDTO = convertToDTO(candidate.get());
+                Response response = new Response(HttpStatus.OK.value(), "Candidate found", candidateDTO);
                 return new ResponseEntity<>(response, HttpStatus.OK);
             } else {
                 Response response = new Response(HttpStatus.NOT_FOUND.value(), "Candidate not found", null);
@@ -101,16 +145,20 @@ public class CandidateResources implements IResources<Candidate, Long> {
         }
     }
 
+    // Lấy tất cả ứng viên
     @Override
     @GetMapping
     public ResponseEntity<Response> getAll() {
         try {
-            // Chuyển Iterator thành List
             Iterator<Candidate> iterator = candidateService.getAll();
             List<Candidate> candidates = new ArrayList<>();
-            iterator.forEachRemaining(candidates::add); // Thêm các phần tử vào List từ Iterator
+            iterator.forEachRemaining(candidates::add);
 
-            Response response = new Response(HttpStatus.OK.value(), "All candidates retrieved successfully", candidates);
+            List<CandidateDTO> candidateDTOs = candidates.stream()
+                    .map(this::convertToDTO)
+                    .collect(Collectors.toList());
+
+            Response response = new Response(HttpStatus.OK.value(), "All candidates retrieved successfully", candidateDTOs);
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             Response response = new Response(HttpStatus.BAD_REQUEST.value(), "Failed to retrieve candidates", null);
@@ -118,14 +166,14 @@ public class CandidateResources implements IResources<Candidate, Long> {
         }
     }
 
-
     // Tìm kiếm ứng viên theo email và password
     @PostMapping("/login")
     public ResponseEntity<Response> findByEmailAndPassword(@RequestParam String email, @RequestParam String password) {
         try {
             Optional<Candidate> candidate = candidateService.findByEmailAndPassword(email, password);
             if (candidate.isPresent()) {
-                Response response = new Response(HttpStatus.OK.value(), "Candidate found", candidate.get());
+                CandidateDTO candidateDTO = convertToDTO(candidate.get());
+                Response response = new Response(HttpStatus.OK.value(), "Candidate found", candidateDTO);
                 return new ResponseEntity<>(response, HttpStatus.OK);
             } else {
                 Response response = new Response(HttpStatus.NOT_FOUND.value(), "Invalid email or password", null);
@@ -142,7 +190,10 @@ public class CandidateResources implements IResources<Candidate, Long> {
     public ResponseEntity<Response> findByRole(@PathVariable CandidateRole role) {
         try {
             List<Candidate> candidates = candidateService.findByRole(role);
-            Response response = new Response(HttpStatus.OK.value(), "Candidates found", candidates);
+            List<CandidateDTO> candidateDTOs = candidates.stream()
+                    .map(this::convertToDTO)
+                    .collect(Collectors.toList());
+            Response response = new Response(HttpStatus.OK.value(), "Candidates found", candidateDTOs);
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             Response response = new Response(HttpStatus.BAD_REQUEST.value(), "Error searching by role", null);
@@ -155,7 +206,10 @@ public class CandidateResources implements IResources<Candidate, Long> {
     public ResponseEntity<Response> findByNameContainingIgnoreCase(@PathVariable String name) {
         try {
             List<Candidate> candidates = candidateService.findByNameContainingIgnoreCase(name);
-            Response response = new Response(HttpStatus.OK.value(), "Candidates found", candidates);
+            List<CandidateDTO> candidateDTOs = candidates.stream()
+                    .map(this::convertToDTO)
+                    .collect(Collectors.toList());
+            Response response = new Response(HttpStatus.OK.value(), "Candidates found", candidateDTOs);
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             Response response = new Response(HttpStatus.BAD_REQUEST.value(), "Error searching by name", null);
@@ -168,7 +222,10 @@ public class CandidateResources implements IResources<Candidate, Long> {
     public ResponseEntity<Response> findByDobBetween(@RequestParam LocalDate startDate, @RequestParam LocalDate endDate) {
         try {
             List<Candidate> candidates = candidateService.findByDobBetween(startDate, endDate);
-            Response response = new Response(HttpStatus.OK.value(), "Candidates found", candidates);
+            List<CandidateDTO> candidateDTOs = candidates.stream()
+                    .map(this::convertToDTO)
+                    .collect(Collectors.toList());
+            Response response = new Response(HttpStatus.OK.value(), "Candidates found", candidateDTOs);
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             Response response = new Response(HttpStatus.BAD_REQUEST.value(), "Error searching by birthdate", null);

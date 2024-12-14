@@ -9,10 +9,14 @@ import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Response;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Experience;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.resources.IResources;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.services.impl.ExperienceService;
+import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.dto.ExperienceDTO;
 
+import java.time.LocalDate;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Slf4j
 @RestController
@@ -28,7 +32,8 @@ public class ExperienceResources implements IResources<Experience, Long> {
     public ResponseEntity<Response> insert(@RequestBody Experience experience) {
         try {
             Experience savedExperience = experienceService.add(experience);
-            Response response = new Response(200, "Experience created successfully", savedExperience);
+            ExperienceDTO experienceDTO = convertToDTO(savedExperience);
+            Response response = new Response(200, "Experience created successfully", experienceDTO);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             Response response = new Response(500, "Failed to create experience", null);
@@ -42,7 +47,10 @@ public class ExperienceResources implements IResources<Experience, Long> {
     public ResponseEntity<Response> insertAll(@RequestBody List<Experience> experiences) {
         try {
             List<Experience> savedExperiences = experienceService.addMany(experiences);
-            Response response = new Response(200, "Experiences created successfully", savedExperiences);
+            List<ExperienceDTO> experienceDTOs = savedExperiences.stream()
+                    .map(this::convertToDTO)
+                    .collect(Collectors.toList());
+            Response response = new Response(200, "Experiences created successfully", experienceDTOs);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             Response response = new Response(500, "Failed to create experiences", null);
@@ -57,7 +65,8 @@ public class ExperienceResources implements IResources<Experience, Long> {
         try {
             experience.setExpId(id);  // Ensure the ID is set for updating
             Experience updatedExperience = experienceService.update(experience);
-            Response response = new Response(200, "Experience updated successfully", updatedExperience);
+            ExperienceDTO experienceDTO = convertToDTO(updatedExperience);
+            Response response = new Response(200, "Experience updated successfully", experienceDTO);
             return ResponseEntity.ok(response);
         } catch (EntityIdNotFoundException e) {
             Response response = new Response(404, "Experience not found", null);
@@ -86,7 +95,8 @@ public class ExperienceResources implements IResources<Experience, Long> {
         try {
             Optional<Experience> experience = experienceService.getById(id);
             if (experience.isPresent()) {
-                Response response = new Response(200, "Experience found", experience.get());
+                ExperienceDTO experienceDTO = convertToDTO(experience.get());
+                Response response = new Response(200, "Experience found", experienceDTO);
                 return ResponseEntity.ok(response);
             } else {
                 Response response = new Response(404, "Experience not found", null);
@@ -103,21 +113,40 @@ public class ExperienceResources implements IResources<Experience, Long> {
     @GetMapping
     public ResponseEntity<Response> getAll() {
         try {
-            Iterator<Experience> experiences = experienceService.getAll();
-            Response response = new Response(200, "Experiences retrieved successfully", experiences);
-            return ResponseEntity.ok(response);
+            // Fetch all experiences
+            Iterator<Experience> experiencesIterator = experienceService.getAll();
+
+            // Convert the Iterator to a List using StreamSupport
+            List<Experience> experiencesList = StreamSupport.stream(((Iterable<Experience>) () -> experiencesIterator).spliterator(), false)
+                    .toList();
+
+            // Check if experiencesList is empty
+            if (experiencesList.isEmpty()) {
+                return ResponseEntity.status(404).body(new Response(404, "No experiences found", null));
+            }
+
+            // Convert the List of experiences to a List of ExperienceDTOs
+            List<ExperienceDTO> experienceDTOs = experiencesList.stream()
+                    .map(experience -> new ExperienceDTO(experience.getExpId(), experience.getCompanyName(), experience.getWorkDescription(), experience.getRole(), experience.getFromDate(), experience.getToDate()))
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(new Response(200, "Experiences retrieved successfully", experienceDTOs));
         } catch (Exception e) {
-            Response response = new Response(500, "Error retrieving experiences", null);
-            return ResponseEntity.status(500).body(response);
+            log.error("Error retrieving experiences: {}", e.getMessage());
+            return ResponseEntity.status(500).body(new Response(500, "Error retrieving experiences", null));
         }
     }
+
 
     // Tìm kiếm kinh nghiệm theo ID ứng viên
     @GetMapping("/candidate/{candidateId}")
     public ResponseEntity<Response> getByCandidateId(@PathVariable Long candidateId) {
         try {
             List<Experience> experiences = experienceService.findByCandidateId(candidateId);
-            Response response = new Response(200, "Experiences retrieved successfully", experiences);
+            List<ExperienceDTO> experienceDTOs = experiences.stream()
+                    .map(this::convertToDTO)
+                    .collect(Collectors.toList());
+            Response response = new Response(200, "Experiences retrieved successfully", experienceDTOs);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             Response response = new Response(500, "Error retrieving experiences by candidate", null);
@@ -130,7 +159,10 @@ public class ExperienceResources implements IResources<Experience, Long> {
     public ResponseEntity<Response> getByCompanyName(@PathVariable String companyName) {
         try {
             List<Experience> experiences = experienceService.findByCompanyName(companyName);
-            Response response = new Response(200, "Experiences retrieved successfully", experiences);
+            List<ExperienceDTO> experienceDTOs = experiences.stream()
+                    .map(this::convertToDTO)
+                    .collect(Collectors.toList());
+            Response response = new Response(200, "Experiences retrieved successfully", experienceDTOs);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             Response response = new Response(500, "Error retrieving experiences by company", null);
@@ -143,7 +175,10 @@ public class ExperienceResources implements IResources<Experience, Long> {
     public ResponseEntity<Response> getByRole(@PathVariable String role) {
         try {
             List<Experience> experiences = experienceService.findByRole(role);
-            Response response = new Response(200, "Experiences retrieved successfully", experiences);
+            List<ExperienceDTO> experienceDTOs = experiences.stream()
+                    .map(this::convertToDTO)
+                    .collect(Collectors.toList());
+            Response response = new Response(200, "Experiences retrieved successfully", experienceDTOs);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             Response response = new Response(500, "Error retrieving experiences by role", null);
@@ -156,11 +191,33 @@ public class ExperienceResources implements IResources<Experience, Long> {
     public ResponseEntity<Response> getByCompanyAndRole(@PathVariable String companyName, @PathVariable String role) {
         try {
             List<Experience> experiences = experienceService.findByCompanyNameAndRole(companyName, role);
-            Response response = new Response(200, "Experiences retrieved successfully", experiences);
+            List<ExperienceDTO> experienceDTOs = experiences.stream()
+                    .map(this::convertToDTO)
+                    .collect(Collectors.toList());
+            Response response = new Response(200, "Experiences retrieved successfully", experienceDTOs);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             Response response = new Response(500, "Error retrieving experiences by company and role", null);
             return ResponseEntity.status(500).body(response);
         }
+    }
+
+    // Helper methods to convert Experience to ExperienceDTO
+    private ExperienceDTO convertToDTO(Experience experience) {
+        return new ExperienceDTO(
+                experience.getExpId(),
+                experience.getCompanyName(),
+                experience.getWorkDescription(),
+                experience.getRole(),
+                experience.getFromDate(),
+                experience.getToDate()
+        );
+    }
+
+    private List<ExperienceDTO> convertToDTOList(Iterator<Experience> experiences) {
+        return experiences == null ? List.of() :
+                ((List<Experience>) experiences).stream()
+                        .map(this::convertToDTO)
+                        .collect(Collectors.toList());
     }
 }
