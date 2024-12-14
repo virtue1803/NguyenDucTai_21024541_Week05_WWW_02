@@ -28,5 +28,14 @@ public class JobSkillId implements Serializable {
     @JoinColumn(name = "skill_id", nullable = false)
     private Skill skill;
 
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof JobSkillId that)) return false;
+        return Objects.equals(getJob(), that.getJob()) && Objects.equals(getSkill(), that.getSkill());
+    }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(getJob(), getSkill());
+    }
 }

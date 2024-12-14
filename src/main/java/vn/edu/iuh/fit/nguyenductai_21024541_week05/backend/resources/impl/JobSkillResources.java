@@ -13,6 +13,8 @@ import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.services.impl.JobSkil
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.JobSkill;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.exceptions.EntityIdNotFoundException;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 @Slf4j
@@ -111,12 +113,18 @@ public class JobSkillResources implements IResources<JobSkill, JobSkillId> {
         }
     }
 
-    // Get all JobSkills
     @Override
     @GetMapping
     public ResponseEntity<Response> getAll() {
         try {
-            List<JobSkill> jobSkills = (List<JobSkill>) jobSkillService.getAll();
+            // Lấy Iterator từ service
+            Iterator<JobSkill> jobSkillIterator = jobSkillService.getAll();
+
+            // Chuyển Iterator thành List
+            List<JobSkill> jobSkills = new ArrayList<>();
+            jobSkillIterator.forEachRemaining(jobSkills::add);
+
+            // Tạo response với dữ liệu đã chuyển đổi
             Response response = new Response(200, "Job Skills retrieved successfully", jobSkills);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -125,6 +133,7 @@ public class JobSkillResources implements IResources<JobSkill, JobSkillId> {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+
 
     // Find JobSkills by Skill ID
     @GetMapping("/by-skill/{skillId}")
