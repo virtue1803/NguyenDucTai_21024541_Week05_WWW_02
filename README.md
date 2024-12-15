@@ -24,16 +24,10 @@ Hệ thống được xây dựng nhằm mục đích:
 
 ## Các tính năng chính
 1. **Đối với ứng viên:**
-   - Đăng ký, đăng nhập.
-   - Tìm kiếm việc làm theo từ khóa, địa điểm, mức lương.
-   - Tạo và quản lý hồ sơ trực tuyến.
-   - Nộp đơn xin việc trực tiếp trên nền tảng.
+   
 
 2. **Đối với nhà tuyển dụng:**
-   - Đăng ký, đăng nhập.
-   - Đăng tin tuyển dụng.
-   - Quản lý danh sách ứng viên.
-   - Gửi email tuyển dụng trực tiếp từ hệ thống.
+   
 
 ## Các yêu cầu
 ### Yêu cầu phần cứng:
@@ -50,7 +44,7 @@ Hệ thống được xây dựng nhằm mục đích:
 ## Cài đặt
 1. Clone repository về máy:
    ```bash
-   git clone https://github.com/username/recruitment-website.git
+   git clone https://github.com/virtue1803/NguyenDucTai_21024541_Week05_WWW_02.git
    ```
 2. Cài đặt các thư viện cần thiết:
    ```bash
