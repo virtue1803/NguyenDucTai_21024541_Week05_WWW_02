@@ -59,7 +59,7 @@ public class ExperienceResources implements IResources<Experience, Long> {
     }
 
     // Cập nhật một kinh nghiệm
-    @Override
+//    @Override
     @PutMapping("/{id}")
     public ResponseEntity<Response> update(@PathVariable Long id, @RequestBody Experience experience) {
         try {
@@ -75,7 +75,7 @@ public class ExperienceResources implements IResources<Experience, Long> {
     }
 
     // Xóa một kinh nghiệm
-    @Override
+//    @Override
     @DeleteMapping("/{id}")
     public ResponseEntity<Response> delete(@PathVariable Long id) {
         try {
@@ -89,7 +89,7 @@ public class ExperienceResources implements IResources<Experience, Long> {
     }
 
     // Lấy một kinh nghiệm theo ID
-    @Override
+//    @Override
     @GetMapping("/{id}")
     public ResponseEntity<Response> getById(@PathVariable Long id) {
         try {

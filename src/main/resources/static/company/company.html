@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company List</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Company List</h2>
+
+    <!-- Search by Name -->
+    <div class="mb-4">
+        <input type="text" id="searchName" class="form-control" placeholder="Search by company name">
+        <button class="btn btn-primary mt-2 w-100" onclick="searchByName()">Search by Name</button>
+    </div>
+
+    <!-- Search by Email -->
+    <div class="mb-4">
+        <input type="text" id="searchEmail" class="form-control" placeholder="Search by email">
+        <button class="btn btn-info mt-2 w-100" onclick="searchByEmail()">Search by Email</button>
+    </div>
+
+    <!-- Refresh Button -->
+    <button class="btn btn-secondary mb-4" onclick="fetchCompanies()">Refresh</button>
+
+    <!-- Table to display companies -->
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title">Company List</h4>
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
+                    <tr>
+                        <th>Company Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>About</th>
+                        <th>Website</th>
+                        <th>Address</th>
+                    </tr>
+                    </thead>
+                    <tbody id="companyTableBody">
+                    <!-- Dynamic rows will be added here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Function to fetch and display companies
+    function fetchCompanies() {
+        fetch('/api/companies')
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.getElementById('companyTableBody');
+                tableBody.innerHTML = ''; // Clear current rows
+
+                if (data.status === 200 && data.data.length > 0) {
+                    data.data.forEach(company => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${company.compName}</td>
+                            <td>${company.email}</td>
+                            <td>${company.phone}</td>
+                            <td>${company.about}</td>
+                            <td><a href="${company.webUrl}" target="_blank">${company.webUrl}</a></td>
+                            <td>${company.address ? company.address.street + ", " + company.address.city : 'N/A'}</td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                } else {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td colspan="6" class="text-center">No companies found</td>`;
+                    tableBody.appendChild(row);
+                }
+            })
+            .catch(error => console.error('Error fetching companies:', error));
+    }
+
+    // Function to search companies by name
+    function searchByName() {
+        const name = document.getElementById('searchName').value;
+        fetch(`/api/companies/search/name?name=${name}`)
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.getElementById('companyTableBody');
+                tableBody.innerHTML = ''; // Clear current rows
+
+                if (data.status === 200 && data.data.length > 0) {
+                    data.data.forEach(company => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${company.compName}</td>
+                            <td>${company.email}</td>
+                            <td>${company.phone}</td>
+                            <td>${company.about}</td>
+                            <td><a href="${company.webUrl}" target="_blank">${company.webUrl}</a></td>
+                            <td>${company.address ? company.address.street + ", " + company.address.city : 'N/A'}</td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                } else {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td colspan="6" class="text-center">No companies found</td>`;
+                    tableBody.appendChild(row);
+                }
+            })
+            .catch(error => console.error('Error searching companies:', error));
+    }
+
+    // Function to search companies by email
+    function searchByEmail() {
+        const email = document.getElementById('searchEmail').value;
+        fetch(`/api/companies/search/email?email=${email}`)
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.getElementById('companyTableBody');
+                tableBody.innerHTML = ''; // Clear current rows
+
+                if (data.status === 200 && data.data) {
+                    const company = data.data;
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${company.compName}</td>
+                        <td>${company.email}</td>
+                        <td>${company.phone}</td>
+                        <td>${company.about}</td>
+                        <td><a href="${company.webUrl}" target="_blank">${company.webUrl}</a></td>
+                        <td>${company.address ? company.address.street + ", " + company.address.city + ", " + company.address.toString() : 'N/A'}</td>
+                    `;
+                    tableBody.appendChild(row);
+                } else {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td colspan="6" class="text-center">No company found with this email</td>`;
+                    tableBody.appendChild(row);
+                }
+            })
+            .catch(error => console.error('Error searching companies by email:', error));
+    }
+
+    // Initial fetch to display all companies
+    fetchCompanies();
+</script>
+
+</body>
+</html>

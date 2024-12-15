@@ -14,6 +14,8 @@ import java.io.Serializable;
 @Data
 @AllArgsConstructor
 public class JobSkillDTO implements Serializable {
+    JobDTO job;
+    SkillDTO skill;
     String moreInfos;
     SkillLevel skillLevel;
 }

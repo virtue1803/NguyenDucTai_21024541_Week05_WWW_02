@@ -12,8 +12,10 @@ import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Skill;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.services.impl.SkillService;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.resources.IResources;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -44,7 +46,7 @@ public class SkillResources implements IResources<Skill, Long> {
     }
 
     // Update Skill by ID
-    @Override
+//    @Override
     @PutMapping("/{id}")
     public ResponseEntity<Response> update(@PathVariable Long id, @RequestBody Skill skill) {
         try {
@@ -60,7 +62,7 @@ public class SkillResources implements IResources<Skill, Long> {
     }
 
     // Delete Skill by ID
-    @Override
+//    @Override
     @DeleteMapping("/{id}")
     public ResponseEntity<Response> delete(@PathVariable Long id) {
         try {
@@ -75,7 +77,7 @@ public class SkillResources implements IResources<Skill, Long> {
     }
 
     // Get Skill by ID
-    @Override
+//    @Override
     @GetMapping("/{id}")
     public ResponseEntity<Response> getById(@PathVariable Long id) {
         try {
@@ -111,6 +113,18 @@ public class SkillResources implements IResources<Skill, Long> {
     public ResponseEntity<Response> findBySkillType(@RequestParam SkillType skillType) {
         List<Skill> skills = skillService.findBySkillType(skillType);
         Response response = new Response(HttpStatus.OK.value(), "Skills found by type", skills);
+        return ResponseEntity.ok(response);
+    }
+
+    // Endpoint to get all skill types
+    @GetMapping("/types")
+    public ResponseEntity<Response> getSkillTypes() {
+        // Assuming SkillType is an enum with values TECHNICAL_SKILL, SOFT_SKILL, UNSPECIFIC
+        List<String> skillTypes = Arrays.stream(SkillType.values())
+                .map(Enum::name)
+                .collect(Collectors.toList());
+
+        Response response = new Response(HttpStatus.OK.value(), "Skill types retrieved successfully", skillTypes);
         return ResponseEntity.ok(response);
     }
 

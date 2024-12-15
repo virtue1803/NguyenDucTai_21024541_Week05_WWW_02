@@ -4,11 +4,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Response;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Skill;
-import vn.edu.iuh.fit.nguyenductai_21024541_week05.frontend.models.SkillModel;
+import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.services.impl.SkillService;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.enums.SkillType;
+import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.exceptions.EntityIdNotFoundException;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,74 +17,87 @@ import java.util.Optional;
 @RequestMapping("/skills")
 public class SkillController {
 
-    private final SkillModel skillModel;
-
     @Autowired
-    public SkillController(SkillModel skillModel) {
-        this.skillModel = skillModel;
+    private SkillService skillService;
+
+    // Endpoint to add a single skill
+    @PostMapping("/add")
+    public String addSkill(@ModelAttribute Skill skill, Model model) {
+        Skill savedSkill = skillService.add(skill);
+        model.addAttribute("skill", savedSkill);
+        model.addAttribute("message", "Skill added successfully");
+        return "skill_details"; // View to show skill details
     }
 
-    // Endpoint to add a single Skill
-    @PostMapping("/insert-skill")
-    public String insertSkill(@ModelAttribute Skill skill, Model model) {
-        Response response = skillModel.insert(skill);
-        model.addAttribute("response", response);
-        return "skill_response"; // View to display the result
+    // Endpoint to add multiple skills
+    @PostMapping("/addAll")
+    public String addSkills(@ModelAttribute List<Skill> skills, Model model) {
+        List<Skill> savedSkills = skillService.addMany(skills);
+        model.addAttribute("skills", savedSkills);
+        model.addAttribute("message", "Skills added successfully");
+        return "skills_list"; // View to show all skills
     }
 
-    // Endpoint to add multiple Skills
-    @PostMapping("/insertAll-skill")
-    public String insertAllSkills(@ModelAttribute List<Skill> skills, Model model) {
-        Response response = skillModel.insertAll(skills);
-        model.addAttribute("response", response);
-        return "skill_response"; // View to display the result
-    }
-
-    // Endpoint to update a Skill
-    @PutMapping("/update-skill")
+    // Endpoint to update a skill
+    @PutMapping("/update")
     public String updateSkill(@RequestParam Long id, @ModelAttribute Skill skill, Model model) {
-        Response response = skillModel.update(id, skill);
-        model.addAttribute("response", response);
-        return "skill_response"; // View to display the result
+        try {
+            skill.setId(id); // Set the skill ID for update
+            Skill updatedSkill = skillService.update(skill);
+            model.addAttribute("skill", updatedSkill);
+            model.addAttribute("message", "Skill updated successfully");
+        } catch (EntityIdNotFoundException e) {
+            model.addAttribute("message", e.getMessage());
+        }
+        return "skill_details"; // View to show updated skill details
     }
 
-    // Endpoint to delete a Skill
-    @DeleteMapping("/delete-skill")
+    // Endpoint to delete a skill
+    @DeleteMapping("/delete")
     public String deleteSkill(@RequestParam Long id, Model model) {
-        skillModel.delete(id);
-        model.addAttribute("message", "Skill deleted successfully");
-        return "skill_response"; // View to display the result
+        try {
+            skillService.delete(id);
+            model.addAttribute("message", "Skill deleted successfully");
+        } catch (EntityIdNotFoundException e) {
+            model.addAttribute("message", e.getMessage());
+        }
+        return "skill_response"; // View to show deletion result
     }
 
-    // Endpoint to get a Skill by ID
-    @GetMapping("/getById-skill")
+    // Endpoint to get a skill by ID
+    @GetMapping("/getById")
     public String getSkillById(@RequestParam Long id, Model model) {
-        Optional<Skill> skill = skillModel.getById(id);
-        model.addAttribute("skill", skill.orElse(null));
-        return "skill_details"; // View to display skill details
+        try {
+            Optional<Skill> skill = skillService.getById(id);
+            model.addAttribute("skill", skill.orElse(null));
+            return "skill_details"; // View to show skill details
+        } catch (EntityIdNotFoundException e) {
+            model.addAttribute("message", e.getMessage());
+            return "skill_response"; // View to show error message
+        }
     }
 
-    // Endpoint to get all Skills
-    @GetMapping("/getAll-skill")
+    // Endpoint to get all skills
+    @GetMapping("/getAll")
     public String getAllSkills(Model model) {
-        List<Skill> skills = skillModel.getAll();
+        Iterator<Skill> skills = skillService.getAll();
         model.addAttribute("skills", skills);
-        return "skills_list"; // View to display all skills
+        return "skills_list"; // View to show all skills
     }
 
-    // Endpoint to search Skills by name (case insensitive)
-    @GetMapping("/searchByName-skill")
+    // Endpoint to search skills by name
+    @GetMapping("/searchByName")
     public String getSkillsByName(@RequestParam String skillName, Model model) {
-        List<Skill> skills = skillModel.getSkillsByName(skillName);
+        List<Skill> skills = skillService.findBySkillName(skillName);
         model.addAttribute("skills", skills);
-        return "skills_list"; // View to display skills by name
+        return "skills_list"; // View to show skills matching the name
     }
 
-    // Endpoint to search Skills by type
-    @GetMapping("/searchByType-skill")
+    // Endpoint to search skills by type
+    @GetMapping("/searchByType")
     public String getSkillsByType(@RequestParam SkillType skillType, Model model) {
-        List<Skill> skills = skillModel.getSkillsByType(skillType);
+        List<Skill> skills = skillService.findBySkillType(skillType);
         model.addAttribute("skills", skills);
-        return "skills_list"; // View to display skills by type
+        return "skills_list"; // View to show skills matching the type
     }
 }

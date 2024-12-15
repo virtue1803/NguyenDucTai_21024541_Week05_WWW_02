@@ -20,7 +20,7 @@ public class AddressModel {
 
     private final ObjectMapper mapper;
     private final RestTemplate restTemplate;
-    private final String baseUrl = "http://localhost:8080/api/address";  // URL của API Address
+    private final String baseUrl = "http://localhost:8080/api/addresses";  // URL của API Address
 
     @Autowired
     public AddressModel(ObjectMapper mapper, RestTemplate restTemplate) {

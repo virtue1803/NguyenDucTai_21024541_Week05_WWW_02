@@ -5,6 +5,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.dto.JobDTO;
+import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.dto.JobSkillDTO;
+import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.dto.SkillDTO;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.enums.SkillLevel;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.ids.JobSkillId;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Response;
@@ -12,9 +15,11 @@ import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.resources.IResources;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.services.impl.JobSkillService;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.JobSkill;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.exceptions.EntityIdNotFoundException;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -24,7 +29,6 @@ public class JobSkillResources implements IResources<JobSkill, JobSkillId> {
     @Autowired
     private JobSkillService jobSkillService;
 
-    // Insert a new JobSkill
     @Override
     @PostMapping
     public ResponseEntity<Response> insert(@RequestBody JobSkill jobSkill) {
@@ -39,7 +43,6 @@ public class JobSkillResources implements IResources<JobSkill, JobSkillId> {
         }
     }
 
-    // Insert multiple JobSkills
     @Override
     @PostMapping("/bulk")
     public ResponseEntity<Response> insertAll(@RequestBody List<JobSkill> jobSkills) {
@@ -54,12 +57,11 @@ public class JobSkillResources implements IResources<JobSkill, JobSkillId> {
         }
     }
 
-    // Update JobSkill by ID
-    @Override
+//    @Override
     @PutMapping("/{id}")
     public ResponseEntity<Response> update(@PathVariable JobSkillId id, @RequestBody JobSkill jobSkill) {
         try {
-            jobSkill.setId(id); // Ensure we update the correct JobSkill
+            jobSkill.setId(id);
             JobSkill updatedJobSkill = jobSkillService.update(jobSkill);
             Response response = new Response(200, "Job Skill updated successfully", updatedJobSkill);
             return ResponseEntity.ok(response);
@@ -74,8 +76,7 @@ public class JobSkillResources implements IResources<JobSkill, JobSkillId> {
         }
     }
 
-    // Delete JobSkill by ID
-    @Override
+//    @Override
     @DeleteMapping("/{id}")
     public ResponseEntity<Response> delete(@PathVariable JobSkillId id) {
         try {
@@ -93,13 +94,12 @@ public class JobSkillResources implements IResources<JobSkill, JobSkillId> {
         }
     }
 
-    // Get JobSkill by ID
-    @Override
+//    @Override
     @GetMapping("/{id}")
     public ResponseEntity<Response> getById(@PathVariable JobSkillId id) {
         try {
             JobSkill jobSkill = jobSkillService.getById(id).orElseThrow(() -> new EntityIdNotFoundException("JobSkill not found"));
-            Response response = new Response(200, "Job Skill retrieved successfully", jobSkill);
+            Response response = new Response(200, "Job Skill found", jobSkill);
             return ResponseEntity.ok(response);
         } catch (EntityIdNotFoundException e) {
             log.error("JobSkill not found: ", e);
@@ -113,63 +113,85 @@ public class JobSkillResources implements IResources<JobSkill, JobSkillId> {
     }
 
     @Override
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<Response> getAll() {
         try {
-            // Get Iterator from service
-            Iterator<JobSkill> jobSkillIterator = jobSkillService.getAll();
-
-            // Convert Iterator to List
-            List<JobSkill> jobSkills = new ArrayList<>();
-            jobSkillIterator.forEachRemaining(jobSkills::add);
-
-            // Create response with converted data
-            Response response = new Response(200, "Job Skills retrieved successfully", jobSkills);
+            Iterator<JobSkill> jobSkills = jobSkillService.getAll();
+            List<JobSkillDTO> jobSkillDTOs = new ArrayList<>();
+            while (jobSkills.hasNext()) {
+                JobSkill jobSkill = jobSkills.next();
+                jobSkillDTOs.add(new JobSkillDTO(
+                        new JobDTO(
+                                jobSkill.getId().getJob().getId(),
+                                jobSkill.getId().getJob().getJobName(),
+                                jobSkill.getId().getJob().getJobDesc(),
+                                jobSkill.getId().getJob().getCompany().getCompName()
+                        ),
+                        new SkillDTO(
+                                jobSkill.getId().getSkill().getId(),
+                                jobSkill.getId().getSkill().getSkillDescription(),
+                                jobSkill.getId().getSkill().getSkillName(),
+                                jobSkill.getId().getSkill().getType()
+                        ),
+                        jobSkill.getMoreInfos(),
+                        jobSkill.getSkillLevel()
+                ));
+            }
+            Response response = new Response(200, "Job Skills found", jobSkillDTOs);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            log.error("Error retrieving JobSkills: ", e);
+            log.error("Error retrieving Job Skills: ", e);
             Response response = new Response(500, "Internal Server Error", null);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
-    // Find JobSkills by Skill ID
-    @GetMapping("/by-skill/{skillId}")
-    public ResponseEntity<Response> getBySkillId(@PathVariable Long skillId) {
+    @GetMapping("/skill/{skillId}")
+    public ResponseEntity<Response> findBySkillId(@PathVariable Long skillId) {
         try {
             List<JobSkill> jobSkills = jobSkillService.findBySkillId(skillId);
-            Response response = new Response(200, "Job Skills retrieved by Skill ID", jobSkills);
+            if (jobSkills.isEmpty()) {
+                Response response = new Response(404, "No Job Skills found for Skill ID " + skillId, null);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+            Response response = new Response(200, "Job Skills found for Skill ID " + skillId, jobSkills);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            log.error("Error retrieving JobSkills by Skill ID: ", e);
+            log.error("Error finding Job Skills by Skill ID: ", e);
             Response response = new Response(500, "Internal Server Error", null);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
-    // Find JobSkills by Job ID
-    @GetMapping("/by-job/{jobId}")
-    public ResponseEntity<Response> getByJobId(@PathVariable Long jobId) {
-        try {
-            List<JobSkill> jobSkills = jobSkillService.findByJobId(jobId);
-            Response response = new Response(200, "Job Skills retrieved by Job ID", jobSkills);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            log.error("Error retrieving JobSkills by Job ID: ", e);
-            Response response = new Response(500, "Internal Server Error", null);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
-    }
-
-    // Find JobSkills by Skill Level
-    @GetMapping("/by-skill-level/{skillLevel}")
-    public ResponseEntity<Response> getBySkillLevel(@PathVariable SkillLevel skillLevel) {
+    @GetMapping("/skill-level/{skillLevel}")
+    public ResponseEntity<Response> findBySkillLevel(@PathVariable SkillLevel skillLevel) {
         try {
             List<JobSkill> jobSkills = jobSkillService.findBySkillLevel(skillLevel);
-            Response response = new Response(200, "Job Skills retrieved by Skill Level", jobSkills);
+            if (jobSkills.isEmpty()) {
+                Response response = new Response(404, "No Job Skills found for Skill Level " + skillLevel, null);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+            Response response = new Response(200, "Job Skills found for Skill Level " + skillLevel, jobSkills);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            log.error("Error retrieving JobSkills by Skill Level: ", e);
+            log.error("Error finding Job Skills by Skill Level: ", e);
+            Response response = new Response(500, "Internal Server Error", null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    @GetMapping("/job/{jobId}")
+    public ResponseEntity<Response> findByJobId(@PathVariable Long jobId) {
+        try {
+            List<JobSkill> jobSkills = jobSkillService.findByJobId(jobId);
+            if (jobSkills.isEmpty()) {
+                Response response = new Response(404, "No Job Skills found for Job ID " + jobId, null);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+            Response response = new Response(200, "Job Skills found for Job ID " + jobId, jobSkills);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Error finding Job Skills by Job ID: ", e);
             Response response = new Response(500, "Internal Server Error", null);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }

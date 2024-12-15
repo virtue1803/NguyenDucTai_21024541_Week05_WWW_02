@@ -38,7 +38,8 @@ public class CandidateResources implements IResources<CandidateDTO, Long> {
                 candidate.getPhone(),
                 candidate.getPassword(),
                 candidate.getRole(),
-                candidate.isStatus()
+                candidate.isStatus(),
+                candidate.getAddress()
         );
     }
 
@@ -95,7 +96,7 @@ public class CandidateResources implements IResources<CandidateDTO, Long> {
     }
 
     // Cập nhật ứng viên
-    @Override
+//    @Override
     @PutMapping("/{id}")
     public ResponseEntity<Response> update(@PathVariable Long id, @RequestBody CandidateDTO candidateDTO) {
         try {
@@ -112,7 +113,7 @@ public class CandidateResources implements IResources<CandidateDTO, Long> {
     }
 
     // Xóa ứng viên
-    @Override
+//    @Override
     @DeleteMapping("/{id}")
     public ResponseEntity<Response> delete(@PathVariable Long id) {
         try {
@@ -126,7 +127,7 @@ public class CandidateResources implements IResources<CandidateDTO, Long> {
     }
 
     // Lấy thông tin ứng viên theo ID
-    @Override
+//    @Override
     @GetMapping("/{id}")
     public ResponseEntity<Response> getById(@PathVariable Long id) {
         try {

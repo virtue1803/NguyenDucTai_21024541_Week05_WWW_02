@@ -28,17 +28,26 @@ public class CompanyResources implements IResources<Company, Long> {
         this.companyService = companyService;
     }
 
-    // Convert Company to CompanyDTO
+    // Convert Company to CompanyDTO, including Address fields
     private CompanyDTO convertToDTO(Company company) {
+        String street = company.getAddress() != null ? company.getAddress().getStreet() : null;
+        String city = company.getAddress() != null ? company.getAddress().getCity() : null;
+
         return new CompanyDTO(
                 company.getId(),
                 company.getAbout(),
                 company.getEmail(),
                 company.getCompName(),
                 company.getPhone(),
-                company.getWebUrl()
+                company.getWebUrl(),
+                street,
+                city,
+                company.getAddress()
         );
     }
+
+
+
 
     // Thêm một công ty mới
     @Override
@@ -70,7 +79,7 @@ public class CompanyResources implements IResources<Company, Long> {
     }
 
     // Cập nhật công ty
-    @Override
+//    @Override
     @PutMapping("/{id}")
     public ResponseEntity<Response> update(@PathVariable Long id, @RequestBody Company company) {
         try {
@@ -84,7 +93,7 @@ public class CompanyResources implements IResources<Company, Long> {
     }
 
     // Xóa công ty
-    @Override
+//    @Override
     @DeleteMapping("/{id}")
     public ResponseEntity<Response> delete(@PathVariable Long id) {
         try {
@@ -97,7 +106,7 @@ public class CompanyResources implements IResources<Company, Long> {
     }
 
     // Lấy công ty theo ID
-    @Override
+//    @Override
     @GetMapping("/{id}")
     public ResponseEntity<Response> getById(@PathVariable Long id) {
         try {

@@ -2,6 +2,9 @@ package vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.services.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.dto.JobDTO;
+import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.dto.JobSkillDTO;
+import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.dto.SkillDTO;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.enums.SkillLevel;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.exceptions.EntityIdNotFoundException;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.ids.JobSkillId;
@@ -12,6 +15,7 @@ import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.services.IServices;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class JobSkillService implements IServices<JobSkill, JobSkillId> {
@@ -75,4 +79,27 @@ public class JobSkillService implements IServices<JobSkill, JobSkillId> {
     public List<JobSkill> findByJobId(Long jobId) {
         return jobSkillRepository.findById_Job_Id(jobId);
     }
+
+    public List<JobSkillDTO> getAllJobSkillDTOs() {
+        return jobSkillRepository.findAll().stream()
+                .map(jobSkill -> new JobSkillDTO(
+                        new JobDTO(
+                                jobSkill.getId().getJob().getId(),
+                                jobSkill.getId().getJob().getJobName(),
+                                jobSkill.getId().getJob().getJobDesc(),
+                                jobSkill.getId().getJob().getCompany().getCompName()
+                        ),
+                        new SkillDTO(
+                                jobSkill.getId().getSkill().getId(),
+                                jobSkill.getId().getSkill().getSkillDescription(), // skillDescription
+                                jobSkill.getId().getSkill().getSkillName(),       // skillName
+                                jobSkill.getId().getSkill().getType()
+                        ),
+                        jobSkill.getMoreInfos(),
+                        jobSkill.getSkillLevel()
+                ))
+                .collect(Collectors.toList());
+    }
+
+
 }

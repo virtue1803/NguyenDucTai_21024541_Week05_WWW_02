@@ -1,118 +1,123 @@
 package vn.edu.iuh.fit.nguyenductai_21024541_week05.frontend.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.dto.CandidateDTO;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.enums.CandidateRole;
+import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.exceptions.EntityIdNotFoundException;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Candidate;
-import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Response;
-import vn.edu.iuh.fit.nguyenductai_21024541_week05.frontend.models.CandidateModel;
+import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.services.impl.CandidateService;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
-@Controller
+@RestController
 @RequestMapping("/candidates")
 public class CandidateController {
 
-    private final CandidateModel candidateModel;
-
     @Autowired
-    public CandidateController(CandidateModel candidateModel) {
-        this.candidateModel = candidateModel;
+    private CandidateService candidateService;
+
+    // Thêm một ứng viên mới
+    @PostMapping
+    public ResponseEntity<Candidate> addCandidate(@RequestBody Candidate candidate) {
+        Candidate createdCandidate = candidateService.add(candidate);
+        return new ResponseEntity<>(createdCandidate, HttpStatus.CREATED);
     }
 
-    // Phương thức thêm một Candidate
-    @GetMapping("/insert-candidate")
-    public String insertCandidate(Candidate candidate, Model model) {
-        Response response = candidateModel.insert(candidate);
-        model.addAttribute("response", response);
-        return "candidate_response"; // View để hiển thị thông báo kết quả
+    // Thêm nhiều ứng viên
+    @PostMapping("/bulk")
+    public ResponseEntity<List<Candidate>> addManyCandidates(@RequestBody List<Candidate> candidates) {
+        List<Candidate> createdCandidates = candidateService.addMany(candidates);
+        return new ResponseEntity<>(createdCandidates, HttpStatus.CREATED);
     }
 
-    // Phương thức thêm nhiều Candidate
-    @GetMapping("/insertAll-candidate")
-    public String insertAllCandidates(List<Candidate> candidates, Model model) {
-        Response response = candidateModel.insertAll(candidates);
-        model.addAttribute("response", response);
-        return "candidate_response"; // View để hiển thị thông báo kết quả
-    }
-
-    // Phương thức cập nhật một Candidate
-    @GetMapping("/update-candidate")
-    public String updateCandidate(@RequestParam Long id, Candidate candidate, Model model) {
-        Response response = candidateModel.update(id, candidate);
-        model.addAttribute("response", response);
-        return "candidate_response"; // View để hiển thị thông báo kết quả
-    }
-
-    // Phương thức xóa một Candidate
-    @GetMapping("/delete-candidate")
-    public String deleteCandidate(@RequestParam Long id, Model model) {
-        candidateModel.delete(id);
-        model.addAttribute("message", "Candidate deleted successfully");
-        return "candidate_response"; // View để hiển thị thông báo kết quả
-    }
-
-    // Phương thức lấy Candidate theo ID
-    @GetMapping("/getById-candidate")
-    public String getCandidateById(@RequestParam Long id, Model model) {
-        Optional<Candidate> candidate = candidateModel.getById(id);
-        model.addAttribute("candidate", candidate.orElse(null));
-        return "candidate_details"; // View để hiển thị thông tin Candidate
-    }
-
-    // Phương thức lấy tất cả Candidate
-    @GetMapping("/getAll-candidate")
-    public String getAllCandidates(Model model) {
-        List<Candidate> candidates = candidateModel.getAll();
-        model.addAttribute("candidates", candidates);
-        return "candidates_list"; // View để hiển thị danh sách Candidate
-    }
-
-    // Tìm kiếm Candidate theo email và password
-    @GetMapping("/search/login-candidate")
-    public String findByEmailAndPassword(
-            @RequestParam("email") String email,
-            @RequestParam("password") String password,
-            Model model) {
-        Optional<Candidate> candidate = candidateModel.findByEmailAndPassword(email, password);
-        if (candidate.isPresent()) {
-            model.addAttribute("candidate", candidate.get());
-            return "candidate_details"; // Hiển thị thông tin Candidate đã đăng nhập
+    // Cập nhật thông tin ứng viên
+    @PutMapping("/{id}")
+    public ResponseEntity<Candidate> updateCandidate(@PathVariable Long id, @RequestBody Candidate candidate) {
+        candidate.setId(id);
+        try {
+            Candidate updatedCandidate = candidateService.update(candidate);
+            return new ResponseEntity<>(updatedCandidate, HttpStatus.OK);
+        } catch (EntityIdNotFoundException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        model.addAttribute("message", "Invalid email or password");
-        return "login_form"; // Trả về form đăng nhập nếu không hợp lệ
     }
 
-    // Tìm kiếm Candidate theo vai trò
-    @GetMapping("/findByRole-candidate")
-    public String findByRole(@RequestParam CandidateRole role, Model model) {
-        List<Candidate> candidates = candidateModel.findByRole(role);
-        model.addAttribute("candidates", candidates);
-        return "candidates_list"; // Hiển thị danh sách Candidate theo vai trò
+    // Xóa ứng viên theo ID
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteCandidate(@PathVariable Long id) {
+        try {
+            candidateService.delete(id);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (EntityIdNotFoundException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
-    // Tìm kiếm Candidate theo tên
-    @GetMapping("/findByName-candidate")
-    public String findByNameContainingIgnoreCase(@RequestParam String name, Model model) {
-        List<Candidate> candidates = candidateModel.findByNameContainingIgnoreCase(name);
-        model.addAttribute("candidates", candidates);
-        return "candidates_list"; // Hiển thị danh sách Candidate theo tên
+    // Lấy thông tin ứng viên theo ID
+    @GetMapping("/{id}")
+    public ResponseEntity<Candidate> getCandidateById(@PathVariable Long id) {
+        try {
+            Optional<Candidate> candidate = candidateService.getById(id);
+            return candidate.map(ResponseEntity::ok).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        } catch (EntityIdNotFoundException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
-    // Tìm kiếm Candidate theo ngày sinh
-    @GetMapping("/findByDobBetween-candidate")
-    public String findByDobBetween(
-            @RequestParam LocalDate startDate,
-            @RequestParam LocalDate endDate,
-            Model model) {
-        List<Candidate> candidates = candidateModel.findByDobBetween(startDate, endDate);
-        model.addAttribute("candidates", candidates);
-        return "candidates_list"; // Hiển thị danh sách Candidate theo ngày sinh
+    @GetMapping
+    public ResponseEntity<List<Candidate>> getAllCandidates() {
+        Iterator<Candidate> candidates = candidateService.getAll();
+        List<Candidate> candidatesList = new ArrayList<>();
+        candidates.forEachRemaining(candidatesList::add);
+        return new ResponseEntity<>(candidatesList, HttpStatus.OK);
+    }
+
+
+    // Tìm ứng viên theo email và password
+    @PostMapping("/login")
+    public ResponseEntity<Candidate> login(@RequestBody CandidateDTO candidateDTO) {
+        Optional<Candidate> candidate = candidateService.findByEmailAndPassword(candidateDTO.getEmail(), candidateDTO.getPassword());
+        return candidate.map(ResponseEntity::ok).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
+    // Tìm ứng viên theo vai trò
+    @GetMapping("/role/{role}")
+    public ResponseEntity<List<Candidate>> findByRole(@PathVariable String role) {
+        try {
+            CandidateRole candidateRole = CandidateRole.valueOf(role.toUpperCase());
+            List<Candidate> candidates = candidateService.findByRole(candidateRole);
+            return new ResponseEntity<>(candidates, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    // Tìm ứng viên theo tên (case-insensitive)
+    @GetMapping("/search/name/{name}")
+    public ResponseEntity<List<Candidate>> findByName(@PathVariable String name) {
+        List<Candidate> candidates = candidateService.findByNameContainingIgnoreCase(name);
+        return new ResponseEntity<>(candidates, HttpStatus.OK);
+    }
+
+    // Tìm ứng viên theo ngày sinh trong khoảng thời gian
+    @GetMapping("/dob")
+    public ResponseEntity<List<Candidate>> findByDobBetween(@RequestParam String startDate, @RequestParam String endDate) {
+        try {
+            LocalDate start = LocalDate.parse(startDate);
+            LocalDate end = LocalDate.parse(endDate);
+            List<Candidate> candidates = candidateService.findByDobBetween(start, end);
+            return new ResponseEntity<>(candidates, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
 }

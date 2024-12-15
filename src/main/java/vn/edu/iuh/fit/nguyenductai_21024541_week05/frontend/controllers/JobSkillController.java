@@ -4,95 +4,94 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.enums.SkillLevel;
+import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.exceptions.EntityIdNotFoundException;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.ids.JobSkillId;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.JobSkill;
-import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Response;
-import vn.edu.iuh.fit.nguyenductai_21024541_week05.frontend.models.JobSkillModel;
-import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.enums.SkillLevel;
+import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.services.impl.JobSkillService;
 
+import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 
 @Controller
 @RequestMapping("/job-skills")
 public class JobSkillController {
 
-    private final JobSkillModel jobSkillModel;
-
     @Autowired
-    public JobSkillController(JobSkillModel jobSkillModel) {
-        this.jobSkillModel = jobSkillModel;
-    }
+    private JobSkillService jobSkillService;
 
-    // Endpoint to add a single JobSkill
-    @PostMapping("/insert-jobskill")
-    public String insertJobSkill(@ModelAttribute JobSkill jobSkill, Model model) {
-        Response response = jobSkillModel.insert(jobSkill);
-        model.addAttribute("response", response);
-        return "job_skill_response"; // View to display the result
-    }
-
-    // Endpoint to add multiple JobSkills
-    @PostMapping("/insertAll-jobskill")
-    public String insertAllJobSkills(@ModelAttribute List<JobSkill> jobSkills, Model model) {
-        Response response = jobSkillModel.insertAll(jobSkills);
-        model.addAttribute("response", response);
-        return "job_skill_response"; // View to display the result
-    }
-
-    // Endpoint to update a JobSkill
-    @PutMapping("/update-jobskill")
-    public String updateJobSkill(@ModelAttribute JobSkillId id, @ModelAttribute JobSkill jobSkill, Model model) {
-        Response response = jobSkillModel.update(id, jobSkill);
-        model.addAttribute("response", response);
-        return "job_skill_response"; // View to display the result
-    }
-
-    // Endpoint to delete a JobSkill
-    @DeleteMapping("/delete-jobskill")
-    public String deleteJobSkill(@ModelAttribute JobSkillId id, Model model) {
-        jobSkillModel.delete(id);
-        model.addAttribute("message", "Job Skill deleted successfully");
-        return "job_skill_response"; // View to display the result
-    }
-
-    // Endpoint to get a JobSkill by ID
-    @GetMapping("/getById-jobskill")
-    public String getJobSkillById(@ModelAttribute JobSkillId id, Model model) {
-        Optional<JobSkill> jobSkill = jobSkillModel.getById(id);
-        model.addAttribute("jobSkill", jobSkill.orElse(null));
-        return "job_skill_details"; // View to display job skill details
-    }
-
-    // Endpoint to get all JobSkills
-    @GetMapping("/getAll-jobskill")
+    // Lấy tất cả kỹ năng yêu cầu cho công việc
+    @GetMapping
     public String getAllJobSkills(Model model) {
-        List<JobSkill> jobSkills = jobSkillModel.getAll();
+        // Directly pass the Iterator as an Iterable
+        Iterator<JobSkill> jobSkills = jobSkillService.getAll();
         model.addAttribute("jobSkills", jobSkills);
-        return "job_skills_list"; // View to display all job skills
+        return "jobSkills"; // View hiển thị danh sách kỹ năng yêu cầu
     }
 
-    // Endpoint to get JobSkills by Skill ID
-    @GetMapping("/getBySkillId-jobskill")
-    public String getJobSkillsBySkillId(@RequestParam Long skillId, Model model) {
-        List<JobSkill> jobSkills = jobSkillModel.getBySkillId(skillId);
-        model.addAttribute("jobSkills", jobSkills);
-        return "job_skills_list"; // View to display job skills by skill ID
+
+    // Lấy kỹ năng yêu cầu cho công việc theo ID
+    @GetMapping("/{id}")
+    public String getJobSkillById(@PathVariable JobSkillId id, Model model) {
+        try {
+            JobSkill jobSkill = jobSkillService.getById(id).orElseThrow(() -> new EntityIdNotFoundException("JobSkill not found"));
+            model.addAttribute("jobSkill", jobSkill);
+            return "jobSkillDetail"; // View hiển thị chi tiết kỹ năng yêu cầu
+        } catch (EntityIdNotFoundException e) {
+            return "error"; // Nếu không tìm thấy kỹ năng yêu cầu, hiển thị lỗi
+        }
     }
 
-    // Endpoint to get JobSkills by Job ID
-    @GetMapping("/getByJobId-jobskill")
-    public String getJobSkillsByJobId(@RequestParam Long jobId, Model model) {
-        List<JobSkill> jobSkills = jobSkillModel.getByJobId(jobId);
-        model.addAttribute("jobSkills", jobSkills);
-        return "job_skills_list"; // View to display job skills by job ID
+    // Thêm một kỹ năng yêu cầu cho công việc mới
+    @PostMapping
+    public String addJobSkill(@ModelAttribute JobSkill jobSkill) {
+        jobSkillService.add(jobSkill);
+        return "redirect:/job-skills"; // Sau khi thêm, chuyển hướng đến danh sách kỹ năng yêu cầu
     }
 
-    // Endpoint to get JobSkills by Skill Level
-    @GetMapping("/getBySkillLevel-jobskill")
-    public String getJobSkillsBySkillLevel(@RequestParam SkillLevel skillLevel, Model model) {
-        List<JobSkill> jobSkills = jobSkillModel.getBySkillLevel(skillLevel);
+    // Cập nhật kỹ năng yêu cầu cho công việc
+    @PutMapping
+    public String updateJobSkill(@ModelAttribute JobSkill jobSkill) {
+        try {
+            jobSkillService.update(jobSkill);
+            return "redirect:/job-skills"; // Sau khi cập nhật, chuyển hướng đến danh sách
+        } catch (EntityIdNotFoundException e) {
+            return "error"; // Nếu không tìm thấy kỹ năng yêu cầu, hiển thị lỗi
+        }
+    }
+
+    // Xóa kỹ năng yêu cầu theo ID
+    @DeleteMapping("/{id}")
+    public String deleteJobSkill(@PathVariable JobSkillId id) {
+        try {
+            jobSkillService.delete(id);
+            return "redirect:/job-skills"; // Sau khi xóa, chuyển hướng đến danh sách
+        } catch (EntityIdNotFoundException e) {
+            return "error"; // Nếu không tìm thấy kỹ năng yêu cầu, hiển thị lỗi
+        }
+    }
+
+    // Tìm kiếm kỹ năng yêu cầu cho công việc theo SkillId
+    @GetMapping("/search/skill")
+    public String searchBySkillId(@RequestParam Long skillId, Model model) {
+        List<JobSkill> jobSkills = jobSkillService.findBySkillId(skillId);
         model.addAttribute("jobSkills", jobSkills);
-        return "job_skills_list"; // View to display job skills by skill level
+        return "jobSkills"; // Hiển thị kết quả tìm kiếm theo SkillId
+    }
+
+    // Tìm kiếm kỹ năng yêu cầu cho công việc theo SkillLevel
+    @GetMapping("/search/skill-level")
+    public String searchBySkillLevel(@RequestParam SkillLevel skillLevel, Model model) {
+        List<JobSkill> jobSkills = jobSkillService.findBySkillLevel(skillLevel);
+        model.addAttribute("jobSkills", jobSkills);
+        return "jobSkills"; // Hiển thị kết quả tìm kiếm theo SkillLevel
+    }
+
+    // Tìm kiếm kỹ năng yêu cầu cho công việc theo JobId
+    @GetMapping("/search/job")
+    public String searchByJobId(@RequestParam Long jobId, Model model) {
+        List<JobSkill> jobSkills = jobSkillService.findByJobId(jobId);
+        model.addAttribute("jobSkills", jobSkills);
+        return "jobSkills"; // Hiển thị kết quả tìm kiếm theo JobId
     }
 }

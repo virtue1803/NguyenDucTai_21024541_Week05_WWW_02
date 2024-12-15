@@ -9,8 +9,8 @@ import java.util.List;
 public interface IResources<T, P> {
     ResponseEntity<Response> insert(T t);
     ResponseEntity<Response> insertAll(List<T> list);
-    ResponseEntity<Response> update(P p, T t);
-    ResponseEntity<Response> delete(P p);
-    ResponseEntity<Response> getById(P p);
+//    ResponseEntity<Response> update(P p, T t)
+//    ResponseEntity<Response> delete(P p);
+//    ResponseEntity<Response> getById(P p);
     ResponseEntity<Response> getAll();
 }

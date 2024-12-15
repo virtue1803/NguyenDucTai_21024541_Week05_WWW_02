@@ -27,23 +27,18 @@ public class CandidateSkillId implements Serializable {
     @JoinColumn(name = "can_id", nullable = false)
     private Candidate candidate;
 
-
     @ManyToOne
     @JoinColumn(name = "skill_id", nullable = false)
     private Skill skill;
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof CandidateSkillId)) return false;
-        CandidateSkillId that = (CandidateSkillId) o;
-        return Objects.equals(candidate, that.candidate) &&
-                Objects.equals(skill, that.skill);
+        if (!(o instanceof CandidateSkillId that)) return false;
+        return Objects.equals(getCandidate(), that.getCandidate()) && Objects.equals(getSkill(), that.getSkill());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(candidate != null ? candidate.hashCode() : 0,
-                skill != null ? skill.hashCode() : 0);
+        return Objects.hash(getCandidate(), getSkill());
     }
 }

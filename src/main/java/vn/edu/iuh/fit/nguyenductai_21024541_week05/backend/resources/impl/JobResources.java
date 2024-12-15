@@ -31,7 +31,14 @@ public class JobResources implements IResources<Job, Long> {
         try {
             Job createdJob = jobService.add(job);
             log.info("Job created successfully: {}", createdJob);
-            JobDTO jobDTO = new JobDTO(createdJob.getId(), createdJob.getJobDesc(), createdJob.getJobName());
+
+            // Extract company name if company exists
+            String companyName = (createdJob.getCompany() != null && createdJob.getCompany().getCompName() != null)
+                    ? createdJob.getCompany().getCompName()
+                    : "N/A";
+
+            // Pass the company name to the JobDTO
+            JobDTO jobDTO = new JobDTO(createdJob.getId(), createdJob.getJobDesc(), createdJob.getJobName(), companyName);
             return ResponseEntity.status(201).body(new Response(201, "Job created successfully", jobDTO));
         } catch (Exception e) {
             log.error("Error while creating job: {}", e.getMessage());
@@ -45,8 +52,15 @@ public class JobResources implements IResources<Job, Long> {
         try {
             List<Job> createdJobs = jobService.addMany(jobs);
             List<JobDTO> jobDTOs = createdJobs.stream()
-                    .map(job -> new JobDTO(job.getId(), job.getJobDesc(), job.getJobName()))
+                    .map(job -> {
+                        // Extract company name if company exists
+                        String companyName = (job.getCompany() != null && job.getCompany().getCompName() != null)
+                                ? job.getCompany().getCompName()
+                                : "N/A";
+                        return new JobDTO(job.getId(), job.getJobDesc(), job.getJobName(), companyName);
+                    })
                     .collect(Collectors.toList());
+
             log.info("Jobs created successfully: {}", createdJobs);
             return ResponseEntity.status(201).body(new Response(201, "Jobs created successfully", jobDTOs));
         } catch (Exception e) {
@@ -55,14 +69,21 @@ public class JobResources implements IResources<Job, Long> {
         }
     }
 
-    @Override
+//    @Override
     @PutMapping("/{id}")
     public ResponseEntity<Response> update(@PathVariable Long id, @RequestBody Job job) {
         try {
             job.setId(id);  // Set the ID for updating
             Job updatedJob = jobService.update(job);
             log.info("Job updated successfully: {}", updatedJob);
-            JobDTO jobDTO = new JobDTO(updatedJob.getId(), updatedJob.getJobDesc(), updatedJob.getJobName());
+
+            // Extract company name if company exists
+            String companyName = (updatedJob.getCompany() != null && updatedJob.getCompany().getCompName() != null)
+                    ? updatedJob.getCompany().getCompName()
+                    : "N/A";
+
+            // Pass the company name to the JobDTO
+            JobDTO jobDTO = new JobDTO(updatedJob.getId(), updatedJob.getJobDesc(), updatedJob.getJobName(), companyName);
             return ResponseEntity.status(200).body(new Response(200, "Job updated successfully", jobDTO));
         } catch (EntityIdNotFoundException e) {
             log.error("Job not found with ID: {}", id);
@@ -73,7 +94,7 @@ public class JobResources implements IResources<Job, Long> {
         }
     }
 
-    @Override
+//    @Override
     @DeleteMapping("/{id}")
     public ResponseEntity<Response> delete(@PathVariable Long id) {
         try {
@@ -89,14 +110,18 @@ public class JobResources implements IResources<Job, Long> {
         }
     }
 
-    @Override
+//    @Override
     @GetMapping("/{id}")
     public ResponseEntity<Response> getById(@PathVariable Long id) {
         try {
             Optional<Job> job = jobService.getById(id);
             if (job.isPresent()) {
                 log.info("Job found with ID: {}", id);
-                JobDTO jobDTO = new JobDTO(job.get().getId(), job.get().getJobDesc(), job.get().getJobName());
+                // Extract company name if company exists
+                String companyName = (job.get().getCompany() != null && job.get().getCompany().getCompName() != null)
+                        ? job.get().getCompany().getCompName()
+                        : "N/A";
+                JobDTO jobDTO = new JobDTO(job.get().getId(), job.get().getJobDesc(), job.get().getJobName(), companyName);
                 return ResponseEntity.status(200).body(new Response(200, "Job found", jobDTO));
             } else {
                 log.warn("Job not found with ID: {}", id);
@@ -117,7 +142,7 @@ public class JobResources implements IResources<Job, Long> {
 
             // Convert Iterator to List using StreamSupport
             List<Job> jobsList = StreamSupport.stream(((Iterable<Job>) () -> jobsIterator).spliterator(), false)
-                    .toList();  // Collect to a List
+                    .collect(Collectors.toList());  // Collect to a List
 
             if (jobsList.isEmpty()) {
                 return ResponseEntity.status(404).body(new Response(404, "No jobs found", null));
@@ -125,7 +150,12 @@ public class JobResources implements IResources<Job, Long> {
 
             // Convert the List of jobs to a List of JobDTO
             List<JobDTO> jobDTOs = jobsList.stream()
-                    .map(job -> new JobDTO(job.getId(), job.getJobDesc(), job.getJobName()))
+                    .map(job -> {
+                        String companyName = (job.getCompany() != null && job.getCompany().getCompName() != null)
+                                ? job.getCompany().getCompName()
+                                : "N/A";
+                        return new JobDTO(job.getId(), job.getJobDesc(), job.getJobName(), companyName);
+                    })
                     .collect(Collectors.toList());
 
             return ResponseEntity.status(200).body(new Response(200, "Jobs retrieved successfully", jobDTOs));
@@ -135,14 +165,14 @@ public class JobResources implements IResources<Job, Long> {
         }
     }
 
-
     // Search jobs by job name
     @GetMapping("/search/by-name")
     public ResponseEntity<Response> findByJobName(@RequestParam String jobName) {
         try {
             List<Job> jobs = jobService.findByJobName(jobName);
             List<JobDTO> jobDTOs = jobs.stream()
-                    .map(job -> new JobDTO(job.getId(), job.getJobDesc(), job.getJobName()))
+                    .map(job -> new JobDTO(job.getId(), job.getJobDesc(), job.getJobName(),
+                            job.getCompany() != null ? job.getCompany().getCompName() : "N/A"))
                     .collect(Collectors.toList());
             return ResponseEntity.status(200).body(new Response(200, "Jobs retrieved successfully", jobDTOs));
         } catch (Exception e) {
@@ -157,7 +187,8 @@ public class JobResources implements IResources<Job, Long> {
         try {
             List<Job> jobs = jobService.findByCompanyName(companyName);
             List<JobDTO> jobDTOs = jobs.stream()
-                    .map(job -> new JobDTO(job.getId(), job.getJobDesc(), job.getJobName()))
+                    .map(job -> new JobDTO(job.getId(), job.getJobDesc(), job.getJobName(),
+                            job.getCompany() != null ? job.getCompany().getCompName() : "N/A"))
                     .collect(Collectors.toList());
             return ResponseEntity.status(200).body(new Response(200, "Jobs retrieved successfully", jobDTOs));
         } catch (Exception e) {
@@ -172,7 +203,8 @@ public class JobResources implements IResources<Job, Long> {
         try {
             List<Job> jobs = jobService.findByJobDesc(jobDesc);
             List<JobDTO> jobDTOs = jobs.stream()
-                    .map(job -> new JobDTO(job.getId(), job.getJobDesc(), job.getJobName()))
+                    .map(job -> new JobDTO(job.getId(), job.getJobDesc(), job.getJobName(),
+                            job.getCompany() != null ? job.getCompany().getCompName() : "N/A"))
                     .collect(Collectors.toList());
             return ResponseEntity.status(200).body(new Response(200, "Jobs retrieved successfully", jobDTOs));
         } catch (Exception e) {

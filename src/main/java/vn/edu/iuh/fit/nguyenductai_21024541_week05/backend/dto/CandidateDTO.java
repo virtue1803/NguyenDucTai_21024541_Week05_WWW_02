@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.Value;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.enums.CandidateRole;
+import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Address;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -24,4 +25,7 @@ public class CandidateDTO implements Serializable {
     private String password;
     private CandidateRole role;
     private boolean status;
+    Address address;
+
+
 }

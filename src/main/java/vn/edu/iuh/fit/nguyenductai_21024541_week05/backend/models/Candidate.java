@@ -58,4 +58,9 @@ public class Candidate {
         status = true;
         role = CandidateRole.USER;
     }
+
+    // Constructor nhận chỉ id
+    public Candidate(Long id) {
+        this.id = id;
+    }
 }

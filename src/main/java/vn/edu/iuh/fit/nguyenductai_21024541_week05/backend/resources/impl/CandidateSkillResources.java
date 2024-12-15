@@ -7,13 +7,16 @@ import org.springframework.web.bind.annotation.*;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.enums.SkillLevel;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.exceptions.EntityIdNotFoundException;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.ids.CandidateSkillId;
+import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Candidate;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Response;
+import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Skill;
+import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.services.impl.CandidateService;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.services.impl.CandidateSkillService;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.resources.IResources;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.CandidateSkill;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.dto.CandidateSkillDTO;
+import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.services.impl.SkillService;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.StreamSupport;
 
@@ -24,11 +27,30 @@ public class CandidateSkillResources implements IResources<CandidateSkillDTO, Ca
 
     @Autowired
     private CandidateSkillService candidateSkillService;
+    @Autowired
+    private CandidateService candidateService;
+    @Autowired
+    private SkillService skillService;
 
-    // Convert CandidateSkill to CandidateSkillDTO
     private CandidateSkillDTO convertToDTO(CandidateSkill candidateSkill) {
-        return new CandidateSkillDTO(candidateSkill.getMoreInfos(), candidateSkill.getSkillLevel());
+        Candidate candidate = candidateSkill.getId().getCandidate();
+        Skill skill = candidateSkill.getId().getSkill();
+
+        if (candidate == null || skill == null) {
+            log.error("Candidate or Skill is null for CandidateSkill: {}", candidateSkill.getId());
+        }
+
+        // Trả về DTO với ID của Candidate và Skill thay vì đối tượng đầy đủ
+        return new CandidateSkillDTO(
+                candidate != null ? candidate.getId() : null,  // Chỉ lấy ID của Candidate
+                skill != null ? skill.getId() : null,          // Chỉ lấy ID của Skill
+                candidateSkill.getId(),                        // CandidateSkillId
+                candidateSkill.getMoreInfos(),                 // Thông tin thêm
+                candidateSkill.getSkillLevel()                  // Mức độ kỹ năng
+        );
     }
+
+
 
     // Convert CandidateSkillDTO to CandidateSkill
     private CandidateSkill convertToEntity(CandidateSkillDTO candidateSkillDTO) {
@@ -72,61 +94,134 @@ public class CandidateSkillResources implements IResources<CandidateSkillDTO, Ca
         }
     }
 
-    @Override
-    @PutMapping("/{id}")
-    public ResponseEntity<Response> update(@PathVariable("id") CandidateSkillId id, @RequestBody CandidateSkillDTO candidateSkillDTO) {
+    @PutMapping
+    public ResponseEntity<Response> update(
+            @RequestParam("candidateId") Long candidateId,
+            @RequestParam("skillId") Long skillId,
+            @RequestBody CandidateSkillDTO candidateSkillDTO) {
         try {
+            Candidate candidate = candidateService.getById(candidateId).orElseThrow(
+                    () -> new EntityIdNotFoundException("Candidate not found")
+            );
+            Skill skill = skillService.getById(skillId).orElseThrow(
+                    () -> new EntityIdNotFoundException("Skill not found")
+            );
+
+            CandidateSkillId id = new CandidateSkillId(candidate, skill);
+
             CandidateSkill candidateSkill = convertToEntity(candidateSkillDTO);
-            candidateSkill.setId(id);  // Ensure the ID is set correctly before updating
+            candidateSkill.setId(id);
+
             CandidateSkill updatedSkill = candidateSkillService.update(candidateSkill);
             CandidateSkillDTO responseDTO = convertToDTO(updatedSkill);
+
             Response response = new Response(200, "Skill updated successfully", responseDTO);
             return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            Response response = new Response(404, "Skill not found", null);
+        } catch (EntityIdNotFoundException e) {
+            Response response = new Response(404, e.getMessage(), null);
             return ResponseEntity.status(404).body(response);
+        } catch (Exception e) {
+            Response response = new Response(500, "Internal Server Error", null);
+            return ResponseEntity.status(500).body(response);
         }
     }
 
-    @Override
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Response> delete(@PathVariable("id") CandidateSkillId id) {
+
+    @DeleteMapping
+    public ResponseEntity<Response> delete(
+            @RequestParam("candidateId") Long candidateId,
+            @RequestParam("skillId") Long skillId) {
         try {
+            Candidate candidate = candidateService.getById(candidateId).orElseThrow(
+                    () -> new EntityIdNotFoundException("Candidate not found")
+            );
+            Skill skill = skillService.getById(skillId).orElseThrow(
+                    () -> new EntityIdNotFoundException("Skill not found")
+            );
+
+            CandidateSkillId id = new CandidateSkillId(candidate, skill);
+
             candidateSkillService.delete(id);
+
             Response response = new Response(200, "Skill deleted successfully", null);
             return ResponseEntity.ok(response);
         } catch (EntityIdNotFoundException e) {
-            Response response = new Response(404, "Skill not found", null);
+            Response response = new Response(404, e.getMessage(), null);
             return ResponseEntity.status(404).body(response);
+        } catch (Exception e) {
+            Response response = new Response(500, "Internal Server Error", null);
+            return ResponseEntity.status(500).body(response);
         }
     }
 
-    @Override
-    @GetMapping("/{id}")
-    public ResponseEntity<Response> getById(@PathVariable("id") CandidateSkillId id) {
+
+//    @GetMapping("/get-by-id")
+//    public ResponseEntity<Response> getById(
+//            @RequestParam("canId") String candidateId,
+//            @RequestParam("skillId") String skillId
+//    ) {
+//        try {
+//            Candidate candidate = candidateService.getById(Long.parseLong(candidateId)).get();
+//            Skill skill = skillService.getById(Long.parseLong(skillId)).get();
+//            CandidateSkillId tr = new CandidateSkillId(candidate, skill);
+//            // Lấy CandidateSkill từ service
+//            CandidateSkill candidateSkill = candidateSkillService.getById(tr)
+//                    .orElseThrow(() -> new EntityIdNotFoundException("Skill not found"));
+//
+//            // Chuyển đổi sang DTO với dữ liệu đầy đủ
+//            CandidateSkillDTO responseDTO = convertToDTO(candidateSkill);
+//
+//            // Tạo phản hồi thành công
+//            Response response = new Response(200, "Skill retrieved successfully", responseDTO);
+//            return ResponseEntity.ok(response);
+//        } catch (EntityIdNotFoundException e) {
+//            // Trường hợp không tìm thấy dữ liệu
+//            Response response = new Response(404, "Skill not found", null);
+//            return ResponseEntity.status(404).body(response);
+//        }
+//    }
+
+    @GetMapping("/{candidateId}/{skillId}")
+    public ResponseEntity<Response> getById(
+            @PathVariable Long candidateId,
+            @PathVariable Long skillId) {
         try {
-            CandidateSkill candidateSkill = candidateSkillService.getById(id).orElseThrow(() -> new EntityIdNotFoundException("Skill not found"));
+            // Tìm Candidate và Skill theo ID
+            Candidate candidate = candidateService.getById(candidateId)
+                    .orElseThrow(() -> new EntityIdNotFoundException("Candidate not found"));
+            Skill skill = skillService.getById(skillId)
+                    .orElseThrow(() -> new EntityIdNotFoundException("Skill not found"));
+
+            // Tạo CandidateSkillId
+            CandidateSkillId id = new CandidateSkillId(candidate, skill);
+
+            // Tìm CandidateSkill theo ID
+            CandidateSkill candidateSkill = candidateSkillService.getById(id)
+                    .orElseThrow(() -> new EntityIdNotFoundException("CandidateSkill not found"));
+
+            // Chuyển đổi sang DTO và trả về kết quả
             CandidateSkillDTO responseDTO = convertToDTO(candidateSkill);
             Response response = new Response(200, "Skill retrieved successfully", responseDTO);
             return ResponseEntity.ok(response);
         } catch (EntityIdNotFoundException e) {
-            Response response = new Response(404, "Skill not found", null);
+            Response response = new Response(404, e.getMessage(), null);
             return ResponseEntity.status(404).body(response);
         }
     }
 
+
+
+
     @Override
     @GetMapping
     public ResponseEntity<Response> getAll() {
-        Iterable<CandidateSkill> allSkills = () -> candidateSkillService.getAll(); // Convert Iterator to Iterable
+        Iterable<CandidateSkill> allSkills = () -> candidateSkillService.getAll();  // Convert Iterator to Iterable
         List<CandidateSkillDTO> responseDTOs = StreamSupport.stream(allSkills.spliterator(), false) // Use StreamSupport to convert to stream
                 .map(this::convertToDTO)
                 .toList();  // Collect to list
         Response response = new Response(200, "All skills retrieved successfully", responseDTOs);
         return ResponseEntity.ok(response);
     }
-
-
 
     @GetMapping("/candidate/{candidateId}")
     public ResponseEntity<Response> getSkillsByCandidateId(@PathVariable Long candidateId) {

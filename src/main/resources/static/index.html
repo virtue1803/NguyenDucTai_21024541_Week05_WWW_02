@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-pzjw8f+ua7Kw1TIq0GvExjBZz7CMBJc46t0NvW42+pa5K5wzLv3QkVZQ3Q1gPZgF" crossorigin="anonymous">
+    <style>
+        /* Custom style for the layout */
+        .container-fluid {
+            height: 100vh;
+        }
+        .sidebar {
+            height: 100%;
+            background-color: #f8f9fa;
+            padding-top: 20px;
+            border-right: 2px solid #dee2e6;
+        }
+        .content {
+            height: 100%;
+            padding: 20px;
+        }
+        .menu-item {
+            font-size: 18px;
+            padding: 10px;
+        }
+        .menu-item:hover {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid">
+    <div class="row" style="height: 100%;"> <!-- Create a row for the layout -->
+
+        <!-- Sidebar (Menu) - 1 part -->
+        <div class="col-1 sidebar">
+            <div class="menu-item"><a href="address/address.html">Address</a></div>
+            <div class="menu-item">Candidate</div>
+            <div class="menu-item"><a href="candidate-skills/candidate-skills.html">CandidateSkill</a></div>
+            <div class="menu-item"><a href="company/company.html">Company</a></div>
+            <div class="menu-item"><a href="experience/experience.html">Experience</a></div>
+            <div class="menu-item"><a href="job/job.html">Job</a></div>
+            <div class="menu-item"><a href="job-skill/job-skills.html">JobSkill</a></div>
+            <div class="menu-item"><a href="skill/skills.html">Skill</a></div>
+        </div>
+
+        <!-- Main Content - 9 parts -->
+        <div class="col-11 content">
+            <h2>Welcome to the Dashboard</h2>
+            <div id="content-area">
+                <!-- Nội dung sẽ hiển thị tại đây khi chọn các menu bên trái -->
+                <p>Select a menu item to view content.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS and dependencies -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zyvHQ7l2Rft5u5m5sH6y4qWlCv6+g8JKRfM92v0z" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.0/dist/umd/popper.min.js" integrity="sha384-pzjw8f+ua7Kw1TIq0GvExjBZz7CMBJc46t0NvW42+pa5K5wzLv3QkVZQ3Q1gPZgF" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-pzjw8f+ua7Kw1TIq0GvExjBZz7CMBJc46t0NvW42+pa5K5wzLv3QkVZQ3Q1gPZgF" crossorigin="anonymous"></script>
+</body>
+</html>

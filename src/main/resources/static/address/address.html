@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Address Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Address Management</h2>
+
+    <!-- Form to Add or Update Address -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h4 class="card-title" id="formTitle">Add Address</h4>
+            <form id="addressForm">
+                <input type="hidden" id="addressId"> <!-- Hidden field to store address ID for update -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="street" class="form-label">Street</label>
+                        <input type="text" id="street" class="form-control" placeholder="Enter street" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="city" class="form-label">City</label>
+                        <input type="text" id="city" class="form-control" placeholder="Enter city" required>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="country" class="form-label">Country</label>
+                        <input type="text" id="country" class="form-control" placeholder="Enter country" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="number" class="form-label">Number</label>
+                        <input type="text" id="number" class="form-control" placeholder="Enter number" required>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="zipcode" class="form-label">Zipcode</label>
+                    <input type="text" id="zipcode" class="form-control" placeholder="Enter zipcode" required>
+                </div>
+                <button type="submit" class="btn btn-success" id="submitButton">Add Address</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Search Functionality -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h4 class="card-title">Search Address</h4>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <input type="text" id="searchCity" class="form-control" placeholder="Search by city">
+                    <button class="btn btn-primary mt-2 w-100" onclick="searchByCity()">Search City</button>
+                </div>
+                <div class="col-md-4">
+                    <input type="text" id="searchCountry" class="form-control" placeholder="Search by country">
+                    <button class="btn btn-primary mt-2 w-100" onclick="searchByCountry()">Search Country</button>
+                </div>
+                <div class="col-md-4">
+                    <input type="text" id="searchStreet" class="form-control" placeholder="Search by street">
+                    <button class="btn btn-primary mt-2 w-100" onclick="searchByStreet()">Search Street</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Address List -->
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title">Address List</h4>
+            <button class="btn btn-info mb-3" onclick="fetchAddresses()">Refresh</button>
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
+                    <tr>
+                        <th>Street</th>
+                        <th>City</th>
+                        <th>Country</th>
+                        <th>Number</th>
+                        <th>Zipcode</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody id="addressTableBody">
+                    <!-- Dynamic rows will be added here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Fetch Address list from API and display
+    function fetchAddresses() {
+        fetch('/api/addresses')
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.getElementById('addressTableBody');
+                tableBody.innerHTML = ''; // Clear current rows
+                data.data.forEach(address => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${address.street}</td>
+                        <td>${address.city}</td>
+                        <td>${address.country}</td>
+                        <td>${address.number}</td>
+                        <td>${address.zipcode}</td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" onclick="editAddress(${address.id})">Edit</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteAddress(${address.id})">Delete</button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            });
+    }
+
+    // Add or Update Address
+    document.getElementById('addressForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const street = document.getElementById('street').value;
+        const city = document.getElementById('city').value;
+        const country = document.getElementById('country').value;
+        const number = document.getElementById('number').value;
+        const zipcode = document.getElementById('zipcode').value;
+        const addressId = document.getElementById('addressId').value;
+
+        const addressData = {
+            street,
+            city,
+            country,
+            number,
+            zipcode
+        };
+
+        const method = addressId ? 'PUT' : 'POST';  // PUT if updating, POST if adding
+        const url = addressId ? `/api/addresses/${addressId}` : '/api/addresses';
+
+        fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(addressData)
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 200) {
+                    alert(addressId ? 'Address updated successfully!' : 'Address added successfully!');
+                    fetchAddresses(); // Reload the address list
+                    resetForm(); // Reset form after success
+                } else {
+                    alert('Error updating address');
+                }
+            });
+    });
+
+    // Delete Address
+    function deleteAddress(id) {
+        fetch(`/api/addresses/${id}`, {
+            method: 'DELETE',
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 200) {
+                    alert('Address deleted successfully!');
+                    fetchAddresses(); // Reload the address list
+                } else {
+                    alert('Error deleting address');
+                }
+            });
+    }
+
+    // Edit Address
+    function editAddress(id) {
+        fetch(`/api/addresses/${id}`)
+            .then(response => response.json())
+            .then(data => {
+                const address = data.data;
+                document.getElementById('formTitle').textContent = 'Update Address';
+                document.getElementById('submitButton').textContent = 'Update Address';
+                document.getElementById('addressId').value = address.id;
+                document.getElementById('street').value = address.street;
+                document.getElementById('city').value = address.city;
+                document.getElementById('country').value = address.country;
+                document.getElementById('number').value = address.number;
+                document.getElementById('zipcode').value = address.zipcode;
+            });
+    }
+
+    // Search by City
+    function searchByCity() {
+        const city = document.getElementById('searchCity').value;
+        fetch(`/api/addresses/city/${city}`)
+            .then(response => response.json())
+            .then(data => updateTable(data.data));
+    }
+
+    // Search by Country
+    function searchByCountry() {
+        const country = document.getElementById('searchCountry').value;
+        fetch(`/api/addresses/country/${country}`)
+            .then(response => response.json())
+            .then(data => updateTable(data.data));
+    }
+
+    // Search by Street
+    function searchByStreet() {
+        const street = document.getElementById('searchStreet').value;
+        fetch(`/api/addresses/street/${street}`)
+            .then(response => response.json())
+            .then(data => updateTable(data.data));
+    }
+
+    // Update table rows
+    function updateTable(addresses) {
+        const tableBody = document.getElementById('addressTableBody');
+        tableBody.innerHTML = '';
+        addresses.forEach(address => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${address.street}</td>
+                <td>${address.city}</td>
+                <td>${address.country}</td>
+                <td>${address.number}</td>
+                <td>${address.zipcode}</td>
+                <td>
+                    <button class="btn btn-warning btn-sm" onclick="editAddress(${address.id})">Edit</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteAddress(${address.id})">Delete</button>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+    }
+
+    // Reset form after add/update
+    function resetForm() {
+        document.getElementById('addressForm').reset();
+        document.getElementById('formTitle').textContent = 'Add Address';
+        document.getElementById('submitButton').textContent = 'Add Address';
+        document.getElementById('addressId').value = '';
+    }
+
+    // Initial fetch to display addresses
+    fetchAddresses();
+</script>
+
+</body>
+</html>

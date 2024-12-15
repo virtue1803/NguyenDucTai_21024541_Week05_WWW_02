@@ -86,7 +86,7 @@ public class AddressResources implements IResources<AddressDTO, Long> {
     }
 
     // Cập nhật một địa chỉ
-    @Override
+//    @Override
     @PutMapping("/{id}")
     public ResponseEntity<Response> update(@PathVariable Long id, @RequestBody AddressDTO addressDTO) {
         try {
@@ -109,7 +109,7 @@ public class AddressResources implements IResources<AddressDTO, Long> {
     }
 
     // Xóa địa chỉ theo ID
-    @Override
+//    @Override
     @DeleteMapping("/{id}")
     public ResponseEntity<Response> delete(@PathVariable Long id) {
         try {
@@ -122,7 +122,7 @@ public class AddressResources implements IResources<AddressDTO, Long> {
     }
 
     // Lấy thông tin địa chỉ theo ID
-    @Override
+//    @Override
     @GetMapping("/{id}")
     public ResponseEntity<Response> getById(@PathVariable Long id) {
         try {

@@ -32,4 +32,8 @@ public class Skill {
         this.skillName = skillName;
         this.type = type;
     }
+
+    public Skill(Long id) {
+        this.id = id;
+    }
 }

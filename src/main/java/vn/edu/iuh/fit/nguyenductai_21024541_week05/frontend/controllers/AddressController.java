@@ -3,13 +3,12 @@ package vn.edu.iuh.fit.nguyenductai_21024541_week05.frontend.controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
+import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.exceptions.EntityIdNotFoundException;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Address;
-import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.Response;
-import vn.edu.iuh.fit.nguyenductai_21024541_week05.frontend.models.AddressModel;
+import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.services.impl.AddressService;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,82 +16,95 @@ import java.util.Optional;
 @RequestMapping("/addresses")
 public class AddressController {
 
-    private final AddressModel addressModel;
-
     @Autowired
-    public AddressController(AddressModel addressModel) {
-        this.addressModel = addressModel;
+    private AddressService addressService;
+
+    // Endpoint to add a single address
+    @PostMapping("/add")
+    public String addAddress(@ModelAttribute Address address, Model model) {
+        Address savedAddress = addressService.add(address);
+        model.addAttribute("address", savedAddress);
+        model.addAttribute("message", "Address added successfully");
+        return "address/add_address"; // View to display address details
     }
 
-    // Phương thức thêm một Address
-    @GetMapping("/insert-address")
-    public String insertAddress(Address address, Model model) {
-        Response response = addressModel.insert(address);
-        model.addAttribute("response", response);
-        return "address_response"; // View để hiển thị thông báo kết quả
+    // Endpoint to add multiple addresses
+    @PostMapping("/addAll")
+    public String addAddresses(@ModelAttribute List<Address> addresses, Model model) {
+        List<Address> savedAddresses = addressService.addMany(addresses);
+        model.addAttribute("addresses", savedAddresses);
+        model.addAttribute("message", "Addresses added successfully");
+        return "address/addresses_list"; // View to display all addresses
     }
 
-    // Phương thức thêm nhiều Address
-    @GetMapping("/insertAll-address")
-    public String insertAllAddresses(@RequestParam List<Address> addresses, Model model) {
-        Response response = addressModel.insertAll(addresses);
-        model.addAttribute("response", response);
-        return "address_response"; // View để hiển thị thông báo kết quả
+    // Endpoint to update an address
+    @PutMapping("/update")
+    public String updateAddress(@RequestParam Long id, @ModelAttribute Address address, Model model) {
+        try {
+            address.setId(id);
+            Address updatedAddress = addressService.update(address);
+            model.addAttribute("address", updatedAddress);
+            model.addAttribute("message", "Address updated successfully");
+        } catch (EntityIdNotFoundException e) {
+            model.addAttribute("message", e.getMessage());
+        }
+        return "address/address_details"; // View to display updated address
     }
 
-    // Phương thức cập nhật một Address
-    @GetMapping("/update-address")
-    public String updateAddress(@RequestParam Long id, Address address, Model model) {
-        Response response = addressModel.update(id, address);
-        model.addAttribute("response", response);
-        return "address_response"; // View để hiển thị thông báo kết quả
-    }
-
-    // Phương thức xóa một Address
-    @GetMapping("/delete-address")
+    // Endpoint to delete an address
+    @DeleteMapping("/delete")
     public String deleteAddress(@RequestParam Long id, Model model) {
-        Response response = addressModel.delete(id);
-        model.addAttribute("message", "Address deleted successfully");
-        return "address_response"; // View để hiển thị thông báo kết quả
+        try {
+            addressService.delete(id);
+            model.addAttribute("message", "Address deleted successfully");
+        } catch (EntityIdNotFoundException e) {
+            model.addAttribute("message", e.getMessage());
+        }
+        return "address/address_response"; // View to display deletion result
     }
 
-    // Phương thức lấy Address theo ID
-    @GetMapping("/getById-address")
+    // Endpoint to get an address by ID
+    @GetMapping("/getById")
     public String getAddressById(@RequestParam Long id, Model model) {
-        Optional<Address> address = addressModel.getById(id);
-        model.addAttribute("address", address.orElse(null)); // Returns null if not present
-        return "address_details"; // View để hiển thị thông tin Address
+        try {
+            Optional<Address> address = addressService.getById(id);
+            model.addAttribute("address", address.orElse(null));
+            return "address/address_details"; // View to display address details
+        } catch (EntityIdNotFoundException e) {
+            model.addAttribute("message", e.getMessage());
+            return "address/address_response"; // View to display error message
+        }
     }
 
-    // Phương thức lấy tất cả các Address
-    @GetMapping("/getAll-address")
+    // Endpoint to get all addresses
+    @GetMapping("/getAll")
     public String getAllAddresses(Model model) {
-        List<Address> addresses = addressModel.getAll();
+        Iterator<Address> addresses = addressService.getAll();
         model.addAttribute("addresses", addresses);
-        return "addresses_list"; // View để hiển thị danh sách Address
+        return "address/addresses_list"; // View to show all addresses
     }
 
-    // Tìm kiếm Address theo thành phố
-    @GetMapping("/findByCity-address")
-    public String findByCity(@RequestParam String city, Model model) {
-        List<Address> addresses = addressModel.findByCity(city);
+    // Endpoint to search addresses by city
+    @GetMapping("/searchByCity")
+    public String getAddressesByCity(@RequestParam String city, Model model) {
+        List<Address> addresses = addressService.findByCity(city);
         model.addAttribute("addresses", addresses);
-        return "addresses_list"; // Hiển thị danh sách Address theo thành phố
+        return "address/addresses_list"; // View to show addresses matching the city
     }
 
-    // Tìm kiếm Address theo quốc gia
-    @GetMapping("/findByCountry-address")
-    public String findByCountry(@RequestParam String country, Model model) {
-        List<Address> addresses = addressModel.findByCountry(country);
+    // Endpoint to search addresses by country
+    @GetMapping("/searchByCountry")
+    public String getAddressesByCountry(@RequestParam String country, Model model) {
+        List<Address> addresses = addressService.findByCountry(country);
         model.addAttribute("addresses", addresses);
-        return "addresses_list"; // Hiển thị danh sách Address theo quốc gia
+        return "address/addresses_list"; // View to show addresses matching the country
     }
 
-    // Tìm kiếm Address theo đường phố
-    @GetMapping("/findByStreet-address")
-    public String findByStreet(@RequestParam String street, Model model) {
-        List<Address> addresses = addressModel.findByStreet(street);
+    // Endpoint to search addresses by street
+    @GetMapping("/searchByStreet")
+    public String getAddressesByStreet(@RequestParam String street, Model model) {
+        List<Address> addresses = addressService.findByStreet(street);
         model.addAttribute("addresses", addresses);
-        return "addresses_list"; // Hiển thị danh sách Address theo đường phố
+        return "address/addresses_list"; // View to show addresses matching the street
     }
 }

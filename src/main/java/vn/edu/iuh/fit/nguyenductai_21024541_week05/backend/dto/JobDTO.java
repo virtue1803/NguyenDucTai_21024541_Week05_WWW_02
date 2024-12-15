@@ -16,4 +16,5 @@ public class JobDTO implements Serializable {
     Long id;
     String jobDesc;
     String jobName;
+    String companyName;
 }
