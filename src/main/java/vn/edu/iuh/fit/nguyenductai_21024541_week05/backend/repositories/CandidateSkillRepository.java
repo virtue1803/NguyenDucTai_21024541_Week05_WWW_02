@@ -7,6 +7,8 @@ import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.ids.CandidateSkillId;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.models.CandidateSkill;
 
 import java.util.List;
+import java.util.Optional;
+
 @Repository
 public interface CandidateSkillRepository extends JpaRepository<CandidateSkill, CandidateSkillId> {
     // Tìm kỹ năng của ứng viên theo ID ứng viên
@@ -14,5 +16,6 @@ public interface CandidateSkillRepository extends JpaRepository<CandidateSkill, 
     // Tìm kỹ năng của ứng viên theo mức độ kỹ năng
     List<CandidateSkill> findBySkillLevel(SkillLevel skillLevel);
 
+    Optional<CandidateSkill> findById_Candidate_IdAndId_Skill_Id(Long candidateId, Long skillId);
 
 }

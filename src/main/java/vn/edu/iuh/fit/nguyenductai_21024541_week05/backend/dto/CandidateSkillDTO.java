@@ -19,9 +19,9 @@ import java.io.Serializable;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CandidateSkillDTO implements Serializable {
+    CandidateSkillId id;    // ID của CandidateSkill
     Long candidateId;       // ID của Candidate
     Long skillId;           // ID của Skill
-    CandidateSkillId id;    // ID của CandidateSkill
     String moreInfos;       // Thông tin thêm
     SkillLevel skillLevel;  // Mức độ kỹ năng
 }

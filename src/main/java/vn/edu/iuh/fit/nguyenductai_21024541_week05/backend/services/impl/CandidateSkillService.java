@@ -74,4 +74,8 @@ public class CandidateSkillService implements IServices<CandidateSkill, Candidat
     public List<CandidateSkill> findBySkillLevel(SkillLevel skillLevel) {
         return candidateSkillRepository.findBySkillLevel(skillLevel);
     }
+
+    public Optional<CandidateSkill> findByCandidateIdAndSkillId(Long candidateId, Long skillId) {
+        return candidateSkillRepository.findById_Candidate_IdAndId_Skill_Id(candidateId, skillId);
+    }
 }

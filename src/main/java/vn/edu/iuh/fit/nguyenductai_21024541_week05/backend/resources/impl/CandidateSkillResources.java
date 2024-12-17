@@ -42,9 +42,9 @@ public class CandidateSkillResources implements IResources<CandidateSkillDTO, Ca
 
         // Trả về DTO với ID của Candidate và Skill thay vì đối tượng đầy đủ
         return new CandidateSkillDTO(
+                candidateSkill.getId(), // CandidateSkillId
                 candidate != null ? candidate.getId() : null,  // Chỉ lấy ID của Candidate
                 skill != null ? skill.getId() : null,          // Chỉ lấy ID của Skill
-                candidateSkill.getId(),                        // CandidateSkillId
                 candidateSkill.getMoreInfos(),                 // Thông tin thêm
                 candidateSkill.getSkillLevel()                  // Mức độ kỹ năng
         );
@@ -97,25 +97,32 @@ public class CandidateSkillResources implements IResources<CandidateSkillDTO, Ca
     @PutMapping
     public ResponseEntity<Response> update(
             @RequestParam("candidateId") Long candidateId,
-            @RequestParam("skillId") Long skillId,
             @RequestBody CandidateSkillDTO candidateSkillDTO) {
         try {
-            Candidate candidate = candidateService.getById(candidateId).orElseThrow(
-                    () -> new EntityIdNotFoundException("Candidate not found")
-            );
-            Skill skill = skillService.getById(skillId).orElseThrow(
-                    () -> new EntityIdNotFoundException("Skill not found")
-            );
+            // Tìm Candidate dựa trên candidateId
+            Candidate candidate = candidateService.getById(candidateId)
+                    .orElseThrow(() -> new EntityIdNotFoundException("Candidate not found"));
 
-            CandidateSkillId id = new CandidateSkillId(candidate, skill);
+            // Tìm tất cả kỹ năng liên quan đến Candidate
+            List<CandidateSkill> candidateSkills = candidateSkillService.findByCandidateId(candidateId);
 
-            CandidateSkill candidateSkill = convertToEntity(candidateSkillDTO);
-            candidateSkill.setId(id);
+            if (candidateSkills.isEmpty()) {
+                throw new EntityIdNotFoundException("No skills found for the candidate");
+            }
 
-            CandidateSkill updatedSkill = candidateSkillService.update(candidateSkill);
-            CandidateSkillDTO responseDTO = convertToDTO(updatedSkill);
+            // Cập nhật từng kỹ năng
+            for (CandidateSkill skill : candidateSkills) {
+                skill.setMoreInfos(candidateSkillDTO.getMoreInfos());
+                skill.setSkillLevel(candidateSkillDTO.getSkillLevel());
+                candidateSkillService.update(skill); // Gọi hàm update từng skill một
+            }
 
-            Response response = new Response(200, "Skill updated successfully", responseDTO);
+            // Chuyển đổi sang DTO để trả về
+            List<CandidateSkillDTO> responseDTOs = candidateSkills.stream()
+                    .map(this::convertToDTO)
+                    .toList();
+
+            Response response = new Response(200, "Skills updated successfully for candidate", responseDTOs);
             return ResponseEntity.ok(response);
         } catch (EntityIdNotFoundException e) {
             Response response = new Response(404, e.getMessage(), null);
@@ -125,25 +132,30 @@ public class CandidateSkillResources implements IResources<CandidateSkillDTO, Ca
             return ResponseEntity.status(500).body(response);
         }
     }
+
+
 
 
     @DeleteMapping
-    public ResponseEntity<Response> delete(
-            @RequestParam("candidateId") Long candidateId,
-            @RequestParam("skillId") Long skillId) {
+    public ResponseEntity<Response> delete(@RequestParam("candidateId") Long candidateId) {
         try {
-            Candidate candidate = candidateService.getById(candidateId).orElseThrow(
-                    () -> new EntityIdNotFoundException("Candidate not found")
-            );
-            Skill skill = skillService.getById(skillId).orElseThrow(
-                    () -> new EntityIdNotFoundException("Skill not found")
-            );
+            // Tìm Candidate dựa vào ID
+            Candidate candidate = candidateService.getById(candidateId)
+                    .orElseThrow(() -> new EntityIdNotFoundException("Candidate not found"));
 
-            CandidateSkillId id = new CandidateSkillId(candidate, skill);
+            // Tìm tất cả kỹ năng của Candidate
+            List<CandidateSkill> candidateSkills = candidateSkillService.findByCandidateId(candidateId);
 
-            candidateSkillService.delete(id);
+            if (candidateSkills.isEmpty()) {
+                throw new EntityIdNotFoundException("No skills found for the candidate");
+            }
 
-            Response response = new Response(200, "Skill deleted successfully", null);
+            // Xóa từng kỹ năng
+            for (CandidateSkill skill : candidateSkills) {
+                candidateSkillService.delete(skill.getId());
+            }
+
+            Response response = new Response(200, "All skills deleted for candidate", null);
             return ResponseEntity.ok(response);
         } catch (EntityIdNotFoundException e) {
             Response response = new Response(404, e.getMessage(), null);
@@ -153,6 +165,7 @@ public class CandidateSkillResources implements IResources<CandidateSkillDTO, Ca
             return ResponseEntity.status(500).body(response);
         }
     }
+
 
 
 //    @GetMapping("/get-by-id")
@@ -242,4 +255,25 @@ public class CandidateSkillResources implements IResources<CandidateSkillDTO, Ca
         Response response = new Response(200, "Skills retrieved for level", responseDTOs);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/detail")
+    public ResponseEntity<Response> getDetail(
+            @RequestParam("candidateId") Long candidateId,
+            @RequestParam("skillId") Long skillId) {
+        try {
+            CandidateSkill candidateSkill = candidateSkillService
+                    .findByCandidateIdAndSkillId(candidateId, skillId)
+                    .orElseThrow(() -> new EntityIdNotFoundException("Candidate skill not found"));
+
+            Response response = new Response(200, "Success", candidateSkill);
+            return ResponseEntity.ok(response);
+        } catch (EntityIdNotFoundException e) {
+            Response response = new Response(404, e.getMessage(), null);
+            return ResponseEntity.status(404).body(response);
+        } catch (Exception e) {
+            Response response = new Response(500, "Internal Server Error", null);
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+
 }
