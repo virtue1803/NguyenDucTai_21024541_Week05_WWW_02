@@ -23,4 +23,5 @@ public interface CandidateRepository extends JpaRepository<Candidate, Long> {
     // Tìm ứng viên theo ngày sinh (nếu cần)
     List<Candidate> findByDobBetween(LocalDate startDate, LocalDate endDate);
 
+    Optional<Candidate> findByEmail(String email);
 }

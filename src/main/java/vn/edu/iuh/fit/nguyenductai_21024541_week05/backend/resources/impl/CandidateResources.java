@@ -4,6 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.dto.CandidateDTO;
 import vn.edu.iuh.fit.nguyenductai_21024541_week05.backend.enums.CandidateRole;
@@ -171,11 +173,18 @@ public class CandidateResources implements IResources<CandidateDTO, Long> {
     @PostMapping("/login")
     public ResponseEntity<Response> findByEmailAndPassword(@RequestParam String email, @RequestParam String password) {
         try {
-            Optional<Candidate> candidate = candidateService.findByEmailAndPassword(email, password);
+            Optional<Candidate> candidate = candidateService.findByEmail(email);
             if (candidate.isPresent()) {
-                CandidateDTO candidateDTO = convertToDTO(candidate.get());
-                Response response = new Response(HttpStatus.OK.value(), "Candidate found", candidateDTO);
-                return new ResponseEntity<>(response, HttpStatus.OK);
+                Candidate foundCandidate = candidate.get();
+                // So sánh trực tiếp mật khẩu (không mã hóa)
+                if (password.equals(foundCandidate.getPassword())) {
+                    CandidateDTO candidateDTO = convertToDTO(foundCandidate);
+                    Response response = new Response(HttpStatus.OK.value(), "Candidate found", candidateDTO);
+                    return new ResponseEntity<>(response, HttpStatus.OK);
+                } else {
+                    Response response = new Response(HttpStatus.NOT_FOUND.value(), "Invalid email or password", null);
+                    return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+                }
             } else {
                 Response response = new Response(HttpStatus.NOT_FOUND.value(), "Invalid email or password", null);
                 return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);

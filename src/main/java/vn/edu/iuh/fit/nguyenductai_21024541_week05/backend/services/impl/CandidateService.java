@@ -78,4 +78,9 @@ public class CandidateService implements IServices<Candidate, Long> {
     public List<Candidate> findByDobBetween(LocalDate startDate, LocalDate endDate) {
         return candidateRepository.findByDobBetween(startDate, endDate);
     }
+
+    public Optional<Candidate> findByEmail(String email) {
+        return candidateRepository.findByEmail(email);
+    }
+
 }
