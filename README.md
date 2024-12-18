@@ -97,4 +97,5 @@ Danh sách các kỹ năng, phân loại và thông tin chi tiết về từng k
 10. Address List
 Danh sách các địa chỉ của candidate và công ty
 
-![Uploading image.png…]()
+![image](https://github.com/user-attachments/assets/f0643715-a0ee-4036-a048-f0b5217671e5)
+
