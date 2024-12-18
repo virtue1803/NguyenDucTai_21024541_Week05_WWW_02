@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candidate Info</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container mt-5">
+    <div class="card shadow">
+        <div class="card-header text-center bg-primary text-white">
+            <h3>Candidate Information</h3>
+        </div>
+        <div class="card-body">
+            <table class="table">
+                <tbody>
+                <tr>
+                    <th>ID</th>
+                    <td id="candidate-id"></td>
+                </tr>
+                <tr>
+                    <th>Full Name</th>
+                    <td id="candidate-fullname"></td>
+                </tr>
+                <tr>
+                    <th>Email</th>
+                    <td id="candidate-email"></td>
+                </tr>
+                <tr>
+                    <th>Phone</th>
+                    <td id="candidate-phone"></td>
+                </tr>
+                <tr>
+                    <th>Date of Birth</th>
+                    <td id="candidate-dob"></td>
+                </tr>
+                <tr>
+                    <th>Role</th>
+                    <td id="candidate-role"></td>
+                </tr>
+                <tr>
+                    <th>Status</th>
+                    <td id="candidate-status"></td>
+                </tr>
+                <tr>
+                    <th>Address</th>
+                    <td id="candidate-address"></td>
+                </tr>
+                </tbody>
+            </table>
+            <div class="d-flex justify-content-end">
+                <button class="btn btn-secondary me-2" id="refresh">Refresh</button>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#updateModal">Update</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Update Modal -->
+<div class="modal fade" id="updateModal" tabindex="-1" aria-labelledby="updateModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="updateModalLabel">Update Candidate Information</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="updateForm">
+                    <div class="mb-3">
+                        <label for="update-fullname" class="form-label">Full Name</label>
+                        <input type="text" class="form-control" id="update-fullname" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="update-phone" class="form-label">Phone</label>
+                        <input type="text" class="form-control" id="update-phone" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="update-dob" class="form-label">Date of Birth</label>
+                        <input type="date" class="form-control" id="update-dob" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Save Changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const email = sessionStorage.getItem('email');
+    const password = sessionStorage.getItem('password');
+
+    if (!email || !password) {
+        alert("Unauthorized access. Redirecting to login page.");
+        window.location.href = "/login.html";
+    } else {
+        fetchCandidateData();
+    }
+
+    async function fetchCandidateData() {
+        try {
+            const response = await fetch(`/api/candidates/login?email=${email}&password=${password}`, {
+                method: "POST"
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const candidate = data.data;
+
+                // Hiển thị thông tin candidate lên HTML
+                document.getElementById("candidate-id").textContent = candidate.id;
+                document.getElementById("candidate-fullname").textContent = candidate.fullName;
+                document.getElementById("candidate-email").textContent = candidate.email;
+                document.getElementById("candidate-phone").textContent = candidate.phone;
+                document.getElementById("candidate-dob").textContent = candidate.dob;
+                document.getElementById("candidate-role").textContent = candidate.role;
+                document.getElementById("candidate-status").textContent = candidate.status ? "Active" : "Inactive";
+                document.getElementById("candidate-address").textContent = `${candidate.address.street}, ${candidate.address.city}, ${candidate.address.country}, ${candidate.address.zipcode}`;
+
+                // Đổ dữ liệu vào form update
+                document.getElementById("update-fullname").value = candidate.fullName;
+                document.getElementById("update-phone").value = candidate.phone;
+                document.getElementById("update-dob").value = candidate.dob;
+            } else {
+                const error = await response.json();
+                console.error("Error fetching candidate data:", error.message);
+                alert("Failed to fetch candidate data.");
+            }
+        } catch (error) {
+            console.error("Error fetching candidate data:", error);
+            alert("An error occurred while fetching candidate data.");
+        }
+    }
+
+    async function updateCandidateData(event) {
+        event.preventDefault();
+
+        const candidateId = document.getElementById("candidate-id").textContent;
+        const updatedData = {
+            id: candidateId,
+            fullName: document.getElementById("update-fullname").value,
+            phone: document.getElementById("update-phone").value,
+            dob: document.getElementById("update-dob").value,
+            role: document.getElementById("candidate-role").textContent
+        };
+
+        try {
+            const response = await fetch(`/api/candidates/${candidateId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(updatedData)
+            });
+
+            if (response.ok) {
+                alert("Candidate information updated successfully!");
+                document.getElementById("updateModal").querySelector(".btn-close").click(); // Đóng modal
+                fetchCandidateData(); // Cập nhật lại thông tin
+            } else {
+                alert("Failed to update candidate information.");
+            }
+        } catch (error) {
+            console.error("Error updating candidate information:", error);
+            alert("An error occurred while updating candidate information.");
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", fetchCandidateData);
+    document.getElementById("updateForm").addEventListener("submit", updateCandidateData);
+    document.getElementById("refresh").addEventListener("click", fetchCandidateData);
+</script>
+</body>
+</html>

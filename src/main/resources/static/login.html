@@ -42,6 +42,9 @@
         });
 
         if (response.ok) {
+            const responseData = await response.json();
+            sessionStorage.setItem('email', responseData.data.email);
+            sessionStorage.setItem('password', responseData.data.password);
             // Redirect to candidate/menu.html on success
             window.location.href = "/candidate/menu.html";
         } else {

@@ -103,6 +103,11 @@ public class CandidateResources implements IResources<CandidateDTO, Long> {
     public ResponseEntity<Response> update(@PathVariable Long id, @RequestBody CandidateDTO candidateDTO) {
         try {
             candidateDTO.setId(id);
+            // Kiểm tra ID có khớp không
+            if (!id.equals(candidateDTO.getId())) {
+                return new ResponseEntity<>(new Response(HttpStatus.BAD_REQUEST.value(), "Invalid ID "+ "ID from URL: " + id + " ID from DTO: " + candidateDTO.getId(), null), HttpStatus.BAD_REQUEST);
+            }
+
             Candidate candidate = convertToEntity(candidateDTO);
             Candidate updatedCandidate = candidateService.update(candidate);
             CandidateDTO updatedCandidateDTO = convertToDTO(updatedCandidate);

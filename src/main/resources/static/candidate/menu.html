@@ -6,55 +6,78 @@
     <title>Dashboard</title>
     <!-- Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-pzjw8f+ua7Kw1TIq0GvExjBZz7CMBJc46t0NvW42+pa5K5wzLv3QkVZQ3Q1gPZgF" crossorigin="anonymous">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css" rel="stylesheet">
     <style>
         /* Custom style for the layout */
         .container-fluid {
             height: 100vh;
         }
-        .sidebar {
+        .menu-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
             height: 100%;
-            background-color: #f8f9fa;
-            padding-top: 20px;
-            border-right: 2px solid #dee2e6;
-        }
-        .content {
-            height: 100%;
-            padding: 20px;
         }
         .menu-item {
             font-size: 18px;
-            padding: 10px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+            text-decoration: none;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+            transition: all 0.3s ease;
+            height: 100px;
         }
         .menu-item:hover {
             background-color: #007bff;
             color: white;
-            cursor: pointer;
+            text-decoration: none;
+        }
+        .menu-item i {
+            font-size: 20px;
+            margin-right: 10px;
         }
     </style>
 </head>
 <body>
 
 <div class="container-fluid">
-    <div class="row" style="height: 100%;"> <!-- Create a row for the layout -->
+    <div class="row" style="height: 100%; justify-content: center; align-items: center;"> <!-- Center the content -->
 
-        <!-- Sidebar (Menu) - 1 part -->
-        <div class="col-1 sidebar">
-            <div class="menu-item"><a href="../address/address.html">Address</a></div>
-            <div class="menu-item"><a href="../login.html">Candidate</a></div>
-            <div class="menu-item"><a href="../candidate-skills/candidate-skills.html">CandidateSkill</a></div>
-            <div class="menu-item"><a href="../company/company.html">Company</a></div>
-            <div class="menu-item"><a href="../experience/experience.html">Experience</a></div>
-            <div class="menu-item"><a href="../job/job.html">Job</a></div>
-            <div class="menu-item"><a href="../job-skill/job-skills.html">JobSkill</a></div>
-            <div class="menu-item"><a href="../skill/skills.html">Skill</a></div>
-        </div>
-
-        <!-- Main Content - 9 parts -->
-        <div class="col-11 content">
-            <h2>Welcome to the Dashboard</h2>
-            <div id="content-area">
-                <!-- Nội dung sẽ hiển thị tại đây khi chọn các menu bên trái -->
-                <p>Select a menu item to view content.</p>
+        <!-- Main Content: Menu in the center -->
+        <div class="col-9 content">
+            <div class="menu-grid">
+                <a class="menu-item" href="../address/address.html">
+                    <i class="bi bi-house-door-fill"></i> Address
+                </a>
+                <a class="menu-item" href="../candidate/candidate.html">
+                    <i class="bi bi-person-fill"></i> Candidate
+                </a>
+                <a class="menu-item" href="../candidate-skills/candidate-skills.html">
+                    <i class="bi bi-gear-fill"></i> CandidateSkill
+                </a>
+                <a class="menu-item" href="../company/company.html">
+                    <i class="bi bi-building"></i> Company
+                </a>
+                <a class="menu-item" href="../experience/experience.html">
+                    <i class="bi bi-briefcase-fill"></i> Experience
+                </a>
+                <a class="menu-item" href="../job/job.html">
+                    <i class="bi bi-card-list"></i> Job
+                </a>
+                <a class="menu-item" href="../job-skill/job-skills.html">
+                    <i class="bi bi-tools"></i> JobSkill
+                </a>
+                <a class="menu-item" href="../skill/skills.html">
+                    <i class="bi bi-lightbulb-fill"></i> Skill
+                </a>
             </div>
         </div>
     </div>
