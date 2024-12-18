@@ -99,3 +99,6 @@ Danh sách các địa chỉ của candidate và công ty
 
 ![image](https://github.com/user-attachments/assets/f0643715-a0ee-4036-a048-f0b5217671e5)
 
+---
+mọi chi tiết thông tin hãy đọc phần doc
+
